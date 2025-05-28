@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ConnectSDK Test Page</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    label { display: block; margin-top: 1em; }
+    input { width: 300px; }
+    #log { margin-top: 2em; background: #f9f9f9; padding: 1em; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>ConnectSDK Test Page</h1>
+  <form id="sdk-form" onsubmit="return false;">
+    <label>
+      Bearer Token:
+      <input type="text" id="bearerToken" required>
+    </label>
+    <label>
+      Merchant ID:
+      <input type="text" id="merchantId" required>
+    </label>
+    <label>
+      Partner ID:
+      <input type="text" id="partnerId" required>
+    </label>
+    <label>
+      User External ID:
+      <input type="text" id="userExternalId">
+    </label>
+    <label>
+      Display Name:
+      <input type="text" id="displayName">
+    </label>
+    <label>
+      Partnership ID:
+      <input type="text" id="partnershipId">
+    </label>
+    <label>
+      Mode:
+      <input type="number" id="mode" min="1" max="2">
+    </label>
+    <button type="button" id="open-sdk">Open SDK</button>
+  </form>
+
+  <div id="log"></div>
+
+  <script src="connect-sdk.js"></script>
+  <script>
+    function log(msg) {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML += `<div>${msg}</div>`;
+    }
+
+    let sdk;
+
+    document.getElementById('open-sdk').addEventListener('click', () => {
+      // Get values from form
+      const bearerToken = document.getElementById('bearerToken').value;
+      const merchantId = document.getElementById('merchantId').value;
+      const partnerId = document.getElementById('partnerId').value;
+      const userExternalId = document.getElementById('userExternalId').value;
+      const displayName = document.getElementById('displayName').value;
+      const partnershipId = document.getElementById('partnershipId').value;
+      const mode = document.getElementById('mode').value;
+
+      // Convert IDs to integers or null
+      const merchantIdVal = merchantId ? parseInt(merchantId, 10) : null;
+      const partnerIdVal = partnerId ? parseInt(partnerId, 10) : null;
+      const partnershipIdVal = partnershipId ? parseInt(partnershipId, 10) : null;
+      const userExternalIdVal = userExternalId || null;
+      const displayNameVal = displayName || null;
+      const modeVal = mode ? Number(mode) : null;
+
+      // Create SDK instance (re-create each time for demo)
+      sdk = new window.ConnectSDK({
+        bearerToken,
+        onSuccess: (token, metadata) => {
+          log(`<b>onSuccess:</b> token=${token}, metadata=${JSON.stringify(metadata)}`);
+        },
+        onExit: () => {
+          log('<b>onExit</b>');
+        },
+        onEvent: (event) => {
+          log(`<b>onEvent:</b> ${JSON.stringify(event)}`);
+        }
+      });
+
+      // Call openWithParams
+      sdk.openWithParams({
+        merchantId: merchantIdVal,
+        partnerId: partnerIdVal,
+        userExternalId: userExternalIdVal,
+        displayName: displayNameVal,
+        partnershipId: partnershipIdVal,
+        mode: modeVal
+      });
+    });
+  </script>
+</body>
+</html> 
