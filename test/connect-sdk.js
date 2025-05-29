@@ -391,9 +391,10 @@
   var ConnectSDK = /*#__PURE__*/function () {
     function ConnectSDK(config) {
       _classCallCheck(this, ConnectSDK);
+      console.log(config);
       this.config = _objectSpread2({
-        authServiceUrl: 'https://authservice-staging.withbenji.com',
-        authUrl: 'https://verifyapp-staging.withbenji.com'
+        authServiceUrl: config.environment === 'production' ? 'https://authservice.withbenji.com' : 'https://authservice-staging.withbenji.com',
+        authUrl: config.environment === 'production' ? 'https://verifyapp.withbenji.com' : 'https://verifyapp-staging.withbenji.com'
       }, config);
       this.iframe = null;
       this.iframeContainer = null;
@@ -474,23 +475,33 @@
             while (1) switch (_context2.prev = _context2.next) {
               case 0:
                 _context2.prev = 0;
-                _context2.next = 3;
+                console.log('params', params);
+                if (!params.connect_token) {
+                  _context2.next = 6;
+                  break;
+                }
+                this.config.token = params.connect_token;
+                _context2.next = 10;
+                break;
+              case 6:
+                _context2.next = 8;
                 return this.getAuthToken(params);
-              case 3:
+              case 8:
                 token = _context2.sent;
                 this.config.token = token;
-                _context2.next = 11;
+              case 10:
+                _context2.next = 16;
                 break;
-              case 7:
-                _context2.prev = 7;
+              case 12:
+                _context2.prev = 12;
                 _context2.t0 = _context2["catch"](0);
                 console.error('Failed to initialize SDK:', _context2.t0);
                 throw _context2.t0;
-              case 11:
+              case 16:
               case "end":
                 return _context2.stop();
             }
-          }, _callee2, this, [[0, 7]]);
+          }, _callee2, this, [[0, 12]]);
         }));
         function initialize(_x2) {
           return _initialize.apply(this, arguments);

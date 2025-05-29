@@ -1,8 +1,9 @@
 class ConnectSDK {
-    constructor(config) {
+  constructor(config) {
+    console.log(config);
       this.config = {
-        authServiceUrl: 'https://authservice-staging.withbenji.com',
-        authUrl: 'https://verifyapp-staging.withbenji.com',
+        authServiceUrl: config.environment === 'production' ? 'https://authservice.withbenji.com' : 'https://authservice-staging.withbenji.com',
+        authUrl: config.environment === 'production' ? 'https://verifyapp.withbenji.com' : 'https://verifyapp-staging.withbenji.com',
         ...config
       };
       this.iframe = null;
@@ -55,8 +56,13 @@ class ConnectSDK {
 
     async initialize(params) {
       try {
-        const token = await this.getAuthToken(params);
-        this.config.token = token;
+        console.log('params', params);
+        if (params.connect_token) {
+          this.config.token = params.connect_token;
+        } else {
+          const token = await this.getAuthToken(params);
+          this.config.token = token;
+        }
       } catch (error) {
         console.error('Failed to initialize SDK:', error);
         throw error;

@@ -41,6 +41,13 @@
       Mode:
       <input type="number" id="mode" min="1" max="2">
     </label>
+    <label>
+      Environment:
+      <select id="environment">
+        <option value="staging">staging</option>
+        <option value="production">production</option>
+      </select>
+    </label>
     <button type="button" id="open-sdk">Open SDK</button>
   </form>
 
@@ -55,7 +62,32 @@
 
     let sdk;
 
-    document.getElementById('open-sdk').addEventListener('click', () => {
+    async function fetchConnectToken(params, bearerToken, authServiceUrl) {
+      const requestData = {
+        ...(params.userExternalId ? { user_external_id: params.userExternalId } : {}),
+        mode: params.mode || 1,
+        ...((!params.mode || params.mode != 2) ? {
+          partner_id: params.partnerId,
+          merchant_id: params.merchantId
+        } : {}),
+        display_name: params.displayName,
+        ...(params.partnershipId ? { partnership_id: params.partnershipId } : {})
+      };
+      const url = `${authServiceUrl}/verify/token/create`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`
+        },
+        body: JSON.stringify(requestData)
+      });
+      const data = await response.json();
+      if (!data.data || !data.data.token) throw new Error('No token in response');
+      return data.data.token;
+    }
+
+    document.getElementById('open-sdk').addEventListener('click', async () => {
       // Get values from form
       const bearerToken = document.getElementById('bearerToken').value;
       const merchantId = document.getElementById('merchantId').value;
@@ -64,6 +96,7 @@
       const displayName = document.getElementById('displayName').value;
       const partnershipId = document.getElementById('partnershipId').value;
       const mode = document.getElementById('mode').value;
+      const environment = document.getElementById('environment').value;
 
       // Convert IDs to integers or null
       const merchantIdVal = merchantId ? parseInt(merchantId, 10) : null;
@@ -72,6 +105,11 @@
       const userExternalIdVal = userExternalId || null;
       const displayNameVal = displayName || null;
       const modeVal = mode ? Number(mode) : null;
+
+      // Determine environment for authServiceUrl
+      const authServiceUrl = environment === 'production'
+        ? 'https://authservice.withbenji.com'
+        : 'https://authservice-staging.withbenji.com';
 
       // Create SDK instance (re-create each time for demo)
       sdk = new window.ConnectSDK({
@@ -84,8 +122,24 @@
         },
         onEvent: (event) => {
           log(`<b>onEvent:</b> ${JSON.stringify(event)}`);
-        }
+        },
+        environment
       });
+
+      // Try to fetch connect_token first, fallback to SDK logic if it fails
+      let connectToken = null;
+      try {
+        connectToken = await fetchConnectToken({
+          merchantId: merchantIdVal,
+          partnerId: partnerIdVal,
+          userExternalId: userExternalIdVal,
+          displayName: displayNameVal,
+          partnershipId: partnershipIdVal,
+          mode: modeVal
+        }, bearerToken, authServiceUrl);
+      } catch (err) {
+        log(`<b>Token fetch failed, falling back to SDK logic:</b> ${err.message}`);
+      }
 
       // Call openWithParams
       sdk.openWithParams({
@@ -94,7 +148,8 @@
         userExternalId: userExternalIdVal,
         displayName: displayNameVal,
         partnershipId: partnershipIdVal,
-        mode: modeVal
+        mode: modeVal,
+        ...(connectToken ? { connect_token: connectToken } : {})
       });
     });
   </script>
