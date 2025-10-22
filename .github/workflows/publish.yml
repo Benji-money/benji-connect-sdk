@@ -2,12 +2,12 @@ name: Publish SDK (GH Packages + npm, private)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
-  packages: write      # publish to GitHub Packages
-  id-token: write      # keep enabled; useful if you switch to npm Trusted Publishing later
+  packages: write # publish to GitHub Packages
+  id-token: write # keep enabled; useful if switching to npm Trusted Publishing later
 
 jobs:
   publish:
@@ -29,12 +29,21 @@ jobs:
         run: npm run build
 
       # ---------- Publish to GitHub Packages (private) ----------
-      # This uses the same package name @benji-money/connect-sdk
-      - name: Configure GH registry for @benji-money scope
-        run: npm config set @benji-money:registry https://npm.pkg.github.com
+      # Verify Github token access
+      - name: Verify GitHub token access
+        run: npm whoami --registry=https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Configure auth for GH Packages
+      - name: Configure npm for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+          scope: "@benji-money" # must match package scope
 
       - name: Publish to GitHub Packages
-        run: npm publish --registry=https://npm.pkg.github.com
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
