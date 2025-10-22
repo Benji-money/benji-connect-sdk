@@ -1,6 +1,6 @@
 {
   "name": "@benji-money/connect-sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Benji Connect SDK for authentication and verification",
   "main": "dist/connect-sdk.js",
   "types": "dist/connect-sdk.d.ts",
@@ -8,8 +8,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "babel src -d dist && cp src/*.d.ts dist/",
-    "prepare": "npm run build"
+    "prepack": "npm run build",
+    "build": "babel src -d dist && cp src/*.d.ts dist/"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -25,7 +25,6 @@
   ],
   "author": "Benji Money",
   "license": "UNLICENSED",
-  "private": true,
   "devDependencies": {
     "@babel/cli": "^7.27.0",
     "@babel/core": "^7.26.10",
