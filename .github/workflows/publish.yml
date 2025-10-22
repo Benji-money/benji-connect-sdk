@@ -40,7 +40,7 @@ jobs:
 
       # ---------- Publish to npm (private) ----------
       # Private scoped packages require a paid npm org and --access restricted
-      - name: Publish to npm (restricted/private)
-        run: npm publish --access restricted --registry=https://registry.npmjs.org
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      # - name: Publish to npm (restricted/private)
+      #   run: npm publish --access restricted --registry=https://registry.npmjs.org
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
