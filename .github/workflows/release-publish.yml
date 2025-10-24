@@ -1,4 +1,5 @@
-name: Publish SDK (GitHub Packages)
+# Workflow to publish a new release version of the SDK to Github Packages
+name: Publish Release SDK (GitHub Packages)
 
 on:
   push:
@@ -29,12 +30,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      # OPTIONAL AUTH CHECK: Debug authentication
       - name: Check authentication (optional debug)
         run: npm whoami --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish to GitHub Packages
-        run: npm publish
+      # Publish Stable Release to GitHub Packages with the 'latest' dist-tag, using the version in package.json
+      - name: Publish to GitHub Packages 
+        run: npm publish --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
