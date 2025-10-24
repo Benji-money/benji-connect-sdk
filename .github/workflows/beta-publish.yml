@@ -10,12 +10,35 @@ permissions:
   packages: write # to publish to GitHub Packages
 
 jobs:
-  publish-beta:
+  # Ensure changeset exists
+  ensure-changeset:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-        with: 
+      - name: Require a changeset unless labeled skip-changeset
+        # If pull_request, check for changeset if no label skip-changeset present
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if [[ "${{ contains(join(github.event.pull_request.labels.*.name, ' '), 'skip-changeset') }}" == "true" ]]; then
+              echo "skip-changeset label present; skipping check."
+              exit 0
+            fi
+          fi
+          if ! ls .changeset/*.md >/dev/null 2>&1; then
+            echo "No changeset found. Run: npx changeset"
+            exit 1
+          fi
+
+  # Publish to Github Packages as Beta
+  publish-beta:
+    # Skip Publishing when run triggered by changeset commit to prevent workflow re-run loop
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'Version Packages')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
           fetch-depth: 0 # fetch full git history so Changesets can read commits and push tags
 
       #  Write a temporary .npmrc with auth for GitHub Packages
@@ -23,8 +46,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@benji-money'
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@benji-money"
 
       - name: Install dependencies
         run: npm ci
@@ -33,11 +56,11 @@ jobs:
         run: npm run build
 
       # Enter prerelease mode (no-op if already in pre mode)
-      - name: Enter prerelease mode (beta) 
+      - name: Enter prerelease mode (beta)
         run: npx changeset pre enter beta
 
-      # Version, commit, tag (produces x.y.z-beta.N) 
-      - name: Version packages 
+      # Version, commit, tag (produces x.y.z-beta.N)
+      - name: Version packages
         run: npx changeset version
 
       # OPTIONAL AUTH CHECK: Debug authentication
@@ -45,9 +68,9 @@ jobs:
         run: npm whoami --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       # OPTIONAL SAFETY: ensure package.json version includes "-beta"
-      # Delete this step if you want to allow non-beta versions on the beta tag.
+      # Delete this step if you want to allow non-beta package versions on the beta tag.
       - name: Ensure version is a beta prerelease
         run: |
           VERSION=$(node -p "require('./package.json').version")
@@ -63,6 +86,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push changes 
-        run: | 
+      # Push the version bump commit and release tags created by `changeset version`
+      # Job is guarded so this push doesn't cause a redundant re-run loop.
+      - name: Push changes
+        run: |
           git push --follow-tags
