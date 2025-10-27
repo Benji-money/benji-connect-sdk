@@ -1,4 +1,5 @@
-name: Publish SDK (GitHub Packages)
+# Workflow to publish a new release version of the SDK to Github Packages on push to main branch
+name: Main Push -> Publish Release SDK (GitHub Packages)
 
 on:
   push:
@@ -20,8 +21,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@benji-money'
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@benji-money"
 
       - name: Install dependencies
         run: npm ci
@@ -29,12 +30,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      # OPTIONAL AUTH CHECK: Debug authentication
       - name: Check authentication (optional debug)
         run: npm whoami --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Publish Stable Release to GitHub Packages with the 'latest' dist-tag, using the version in package.json
       - name: Publish to GitHub Packages
-        run: npm publish
+        run: npm publish --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
