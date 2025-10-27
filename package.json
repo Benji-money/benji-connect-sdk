@@ -9,9 +9,10 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && babel src/connect-sdk.js -o dist/connect-sdk.umd.js --source-maps",
-    "dev": "babel src/connect-sdk.js -o dist/connect-sdk.umd.js --source-maps --watch",
-    "prepack": "npm run build"
+    "build": "npm run clean && babel src/connect-sdk.js -o dist/connect-sdk.js --source-maps",
+    "dev": "babel src/connect-sdk.js -o dist/connect-sdk.js --source-maps --watch",
+    "prepack": "npm run build",
+    "connect-sdk:update": "npm run build && npx yalc push"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
