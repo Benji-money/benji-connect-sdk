@@ -5,16 +5,28 @@ on:
   push:
     branches: [main]
 
+# Prevent overlapping publishes if multiple merges land quickly
+concurrency:
+  group: publish-latest-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  contents: read
-  packages: write # publish to GitHub Packages
+  contents: write # to commit and push the version bump and tags that Changesets generates
+  packages: write # to publish to GitHub Packages
 
 jobs:
-  publish:
+  # Publish to Github Packages as Latest Release
+  publish-latest:
+    # Skip Publishing when run triggered by changeset commit to prevent workflow re-run loop
+    if: github.ref == 'refs/heads/main'
+      && !contains(github.actor, '[bot]')
+      && !contains(github.event.head_commit.message, 'Version Packages')
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # fetch full git history so Changesets can read commits and push tags
 
       #  Write a temporary .npmrc with auth for GitHub Packages
       - name: Configure npm for GitHub Packages
@@ -30,14 +42,38 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Ensure not in prerelease mode (switch off beta pre-mode if it was left on)
+      - name: Exit prerelease mode (no-op if already exited)
+        run: npx changeset pre exit || true
+
+      # Calculate version, update CHANGELOG, create commit & tag -> x.y.z
+      - name: Version packages
+        run: npx changeset version
+
       # OPTIONAL AUTH CHECK: Debug authentication
       - name: Check authentication (optional debug)
         run: npm whoami --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Publish Stable Release to GitHub Packages with the 'latest' dist-tag, using the version in package.json
-      - name: Publish to GitHub Packages
-        run: npm publish --tag latest
+      # Safety: refuse to publish if version still looks prerelease
+      - name: Ensure version is stable (no -beta)
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version: $VERSION"
+          if [[ "$VERSION" == *"-"* ]]; then
+            echo "Refusing to publish: version appears to be prerelease."
+            exit 1
+          fi
+
+      # Publish to GitHub Packages with the 'latest' dist-tag
+      - name: Publish latest to GitHub Packages
+        run: npx changeset publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Push the version bump commit and release tags created by `changeset version`
+      # Job is guarded so this push doesn't cause a redundant re-run loop.
+      - name: Push changes
+        run: |
+          git push --follow-tags

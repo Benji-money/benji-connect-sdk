@@ -1,0 +1,26 @@
+# Workflow to make checks on pr to main branch
+name: Main PR -> Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # Ensure a changeset exists for PRs into staging (skip on plain pushes)
+  ensure-changeset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require a changeset unless labeled skip-changeset
+        run: |
+          if [[ "${{ contains(join(github.event.pull_request.labels.*.name, ' '), 'skip-changeset') }}" == "true" ]]; then
+            echo "skip-changeset label present; skipping check."
+            exit 0
+          fi
+          if ! ls .changeset/*.md >/dev/null 2>&1; then
+            echo "No changeset found. Run: npx changeset"
+            exit 1
+          fi
