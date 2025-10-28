@@ -14,10 +14,13 @@ yarn add @benji-money/connect-sdk
 
 ## Usage
 
+### ESM + CJS
+
 ```javascript
 import ConnectSDK from "@benji-money/connect-sdk";
 
 const sdk = new ConnectSDK({
+  env: "production", // or "sandbox" | "development",
   bearerToken: "your-bearer-token",
   onSuccess: (token, metadata) => {
     console.log("Authentication successful", token, metadata);
@@ -36,6 +39,27 @@ sdk.openWithParams({
   partnerId: "partner-id",
   merchantId: "merchant-id",
 });
+```
+
+### UMD (Script Tag)
+
+```javascript
+<script src="/path/to/connect-sdk.umd.js"></script>
+<script>
+  const sdk = new ConnectSDK({
+    env: "production", // or "sandbox" | "development",
+    bearerToken: "your-bearer-token",
+    onSuccess: (token, metadata) => console.log("Authentication successful", token, metadata),
+    onExit: () => console.log("User exited the authentication flow"),
+    onEvent: (event) => console.log("Event received", event),
+  });
+  
+  sdk.openWithParams({
+    displayName: "User Name",
+    partnerId: "partner-id",
+    merchantId: "merchant-id",
+  });
+</script>
 ```
 
 ## Configuration
