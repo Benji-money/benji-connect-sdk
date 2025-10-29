@@ -1,26 +1,26 @@
 /// <reference path="./global.d.ts" />
 
-import type { ConnectSDKConfig, OpenParams, BenjiEventMap, Env } from './types';
+import type { BenjiConnectConfig, BenjiConnectOptions, BenjiConnectEventMap, BenjiConnectEnvironment } from './types';
 import { TypedEmitter } from './emitter';
 import { createMessageRouter } from './router';
 
 // @internal but not exported
 /** @internal */
-interface InternalSDKConfig extends ConnectSDKConfig {
+interface InternalConfig extends BenjiConnectConfig {
   authServiceUrl: string;
   authUrl: string;
   token?: string; // set after initialize()
 }
 
 class ConnectSDK {
-  private sdkConfig: InternalSDKConfig;
+  private sdkConfig: InternalConfig;
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
   private messageRouter?: (e: MessageEvent) => void;
-  public events = new TypedEmitter<BenjiEventMap>();
+  public events = new TypedEmitter<BenjiConnectEventMap>();
 
-  constructor(config: ConnectSDKConfig) {
-    const baseSDKConfig: ConnectSDKConfig = { ...config };
+  constructor(config: BenjiConnectConfig) {
+    const baseSDKConfig: BenjiConnectConfig = { ...config };
 
     // validations
     if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
@@ -30,7 +30,7 @@ class ConnectSDK {
     // Produce an InternalSDKConfig (token intentionally absent at this point)
     this.sdkConfig = { 
       ...baseSDKConfig, 
-      ...this.urlsForEnv(baseSDKConfig.env)
+      ...this.urlsForEnvironment(baseSDKConfig.environment)
       // token is optional and will be added in initialize()
     };
 
@@ -52,14 +52,14 @@ class ConnectSDK {
   }
 
   // returns the URLs for each env
-  private urlsForEnv(env: Env): Pick<InternalSDKConfig, 'authServiceUrl' | 'authUrl'> {
-    if (env === 'sandbox') {
+  private urlsForEnvironment(environment: BenjiConnectEnvironment): Pick<InternalConfig, 'authServiceUrl' | 'authUrl'> {
+    if (environment === 'sandbox') {
       return {
         authServiceUrl: 'https://authservice-staging.withbenji.com',
         authUrl: 'https://verifyapp-staging.withbenji.com',
       };
     }
-    if (env === 'production') {
+    if (environment === 'production') {
       return {
         authServiceUrl: 'https://authservice.withbenji.com',
         authUrl: 'https://verifyapp.withbenji.com',
@@ -72,7 +72,7 @@ class ConnectSDK {
     };
   }
 
-  private async getAuthToken(params: OpenParams): Promise<string> {
+  private async getAuthToken(params: BenjiConnectOptions): Promise<string> {
     const requestData: Record<string, unknown> = {
       ...(params.userExternalId ? { user_external_id: params.userExternalId } : {}),
       mode: params.mode || 1,
@@ -102,11 +102,11 @@ class ConnectSDK {
     }
   }
 
-  async initialize(params: OpenParams) {
+  async initialize(params: BenjiConnectOptions) {
     (this.sdkConfig as any).token = await this.getAuthToken(params);
   }
 
-  async openWithParams(params: OpenParams) {
+  async openWithParams(params: BenjiConnectOptions) {
     await this.initialize(params);
     this.open();
   }
