@@ -42,6 +42,7 @@ class ConnectSDK {
     this.messageRouter = createMessageRouter({
       expectedOrigin,
       onSuccess: this.sdkConfig.onSuccess,
+      onError: this.sdkConfig.onError,
       onExit: this.sdkConfig.onExit,
       onEvent: this.sdkConfig.onEvent,
       emit: (t, d) => this.events.emit(t, d as any),

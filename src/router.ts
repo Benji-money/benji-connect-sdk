@@ -1,8 +1,11 @@
-// router.ts
 import type {
   BenjiConnectEventMap,
   BenjiConnectEventMessage,
   BenjiConnectKnownEvent,
+} from './types';
+
+import {
+  BenjiConnectCallbackMapperMap,
 } from './types';
 
 type RouterConfig = {
@@ -14,11 +17,12 @@ type RouterConfig = {
     detail: BenjiConnectEventMap[K]
   ) => void;
 
-  // FLAT callbacks (back-compat & simplicity)
-  onSuccess: (token: string, metadata?: unknown) => void;
+  // Flat callbacks for simplicity)
+  onSuccess: (token: string, userId?: string) => void;
+  onError: (errorCode: string, errorMessage: string, userId?: string) => void;
   onExit: (reason?: string) => void;
 
-  // Typed one-stream listener for consumers who want everything
+  // Typed one-stream listener for consumers who want all events
   onEvent?: <K extends BenjiConnectKnownEvent>(
     evt: { type: K; data: BenjiConnectEventMap[K] }
   ) => void;
@@ -35,6 +39,7 @@ export function createMessageRouter(deps: RouterConfig) {
     expectedOrigin,
     emit,
     onSuccess,
+    onError,
     onExit,
     onEvent,
     close,
@@ -55,45 +60,68 @@ export function createMessageRouter(deps: RouterConfig) {
     const message = raw as Partial<BenjiConnectEventMessage>;
     if (typeof message.type !== 'string') return;
 
-    // Optional constraint checks
+    // Constraint checks
     if (namespace && message.namespace && message.namespace !== namespace) return;
     if (version != null && message.version != null && String(message.version) !== String(version)) return;
 
-    console.log('benji-connect-sdk case message', message);
+    console.log('benji-connect-sdk recieved message', message);
 
-    // From here consider the message well-formed for internal protocol
+    // Type events and route to callbacks
     switch (message.type) {
+
       case 'authSuccess': {
-        const typedMessage = message as BenjiConnectEventMessage<'authSuccess'>;
-        const payload = typedMessage.data;
-        console.log('benji-connect-sdk recieved authSuccess', typedMessage);
+
+        const eventMessage = message as BenjiConnectEventMessage<'authSuccess'>;
+        const eventData = eventMessage.data;
+        console.log('benji-connect-sdk typed event', eventMessage, eventData);
+
+        const callbackData = BenjiConnectCallbackMapperMap.authSuccess(eventMessage, eventData);
+        console.log('benji-connect-sdk typed callback', callbackData);
+        
         try {
-          onSuccess(payload.token, payload.metadata);
-          emit('authSuccess', payload);
+          onEvent?.({ type: eventMessage.type, data: eventMessage.data });
+          onSuccess(callbackData.token, callbackData.userId);
         } finally {
-          // Typical UX: close on success
+          close();
+        }
+        break;
+      }
+
+      case 'authError': {
+
+        const eventMessage = message as BenjiConnectEventMessage<'authError'>;
+        const eventData = eventMessage.data;
+        console.log('benji-connect-sdk typed event', eventMessage, eventData);
+
+        const callbackData = BenjiConnectCallbackMapperMap.authError(eventMessage, eventData);
+        console.log('benji-connect-sdk typed callback', callbackData);
+        
+        try {
+          close(); // user exited; ensure teardown
+          onEvent?.({ type: eventMessage.type, data: eventMessage.data });
+          onError(callbackData.errorCode, callbackData.errorMessage, callbackData.userId);
+        } finally {
           close();
         }
         break;
       }
 
       case 'authExit': {
-        const typedMessage = message as BenjiConnectEventMessage<'authExit'>;
-        const payload = typedMessage.data;
-        console.log('benji-connect-sdk recieved authExit', typedMessage);
-        close(); // user exited; ensure teardown
-        //onExit?.(payload?.reason);
-        onExit?.();
-        emit('authExit', payload);
-        break;
-      }
 
-      case 'authError': {
-       const typedMessage = message as BenjiConnectEventMessage<'authError'>;
-        const payload = typedMessage.data;
-        console.log('benji-connect-sdk recieved authError', typedMessage);
-        emit('authError', payload);
-        onEvent?.({ type: 'authError', data: payload });
+        const eventMessage = message as BenjiConnectEventMessage<'authExit'>;
+        const eventData = eventMessage.data;
+        console.log('benji-connect-sdk typed event', eventMessage, eventData);
+
+        const callbackData = BenjiConnectCallbackMapperMap.authExit(eventMessage, eventData);
+        console.log('benji-connect-sdk typed callback', callbackData);
+        
+        try {
+          close(); // user exited; ensure teardown
+          onEvent?.({ type: eventMessage.type, data: eventMessage.data });
+          onExit(callbackData.reason);
+        } finally {
+          close();
+        }
         break;
       }
 
@@ -101,7 +129,6 @@ export function createMessageRouter(deps: RouterConfig) {
         // Unknown (forward generically)
         const unknownMessage = message as BenjiConnectEventMessage<any>;
         onEvent?.({ type: unknownMessage.type, data: unknownMessage.data });
-        emit('*', { type: unknownMessage.type, data: unknownMessage.data });
         break;
       }
     }
