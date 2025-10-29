@@ -3,8 +3,8 @@ export type BenjiConnectEnvironment = 'development' | 'sandbox' | 'production';
 export interface BenjiConnectConfig {
   environment: BenjiConnectEnvironment;
   bearerToken: string;
-  onSuccess: (token: string, userId?: string) => void;
-  onError: (errorCode: string, errorMessage: string, userId?: string) => void;
+  onSuccess: (token: string, userData?: BenjiConnectUserData) => void;
+  onError: (errorCode: string, errorMessage: string) => void;
   onExit: (reason?: string) => void;
   onEvent?: (event: { type: string; data?: unknown }) => void;
 }
@@ -23,9 +23,11 @@ export interface BenjiConnectContext {
   version?: string | number;  // e.g., '1.0.0'
 }
 
-export interface AuthSuccessPayload {
-  token: string;
-  metadata?: unknown;
+export interface BenjiConnectUserData {
+  id?: string;
+  name?: string; 
+  statusId?: string;
+  rewardStatus?: string;
 }
 
 /* ================== Transport Event Types ================== */
@@ -36,6 +38,12 @@ type BenjiConnectEventToken = string | { access_token: string; refresh_token?: s
 interface BenjiConnectEventMetadata {
   user?: {
     id?: string | number;
+    first_name?: string
+    [k: string]: unknown;
+  };
+  status?: {
+    status_id?: string;
+    reward_status?: string;
     [k: string]: unknown;
   };
   [k: string]: unknown;
@@ -106,6 +114,21 @@ const buildContext = (message: BenjiConnectEventMessage<any>) => ({
   version: String(message.version ?? ''),
 });
 
+const extractUserData = (data: BenjiConnectEventData): BenjiConnectUserData => {
+  const raw = data.metadata;
+  if (raw == null) {
+    return {id: '', name: '', statusId: '', rewardStatus: ''};
+  }
+  const metadata = raw as BenjiConnectEventMetadata;
+  const userData = {
+    id: extractUserId(data),
+    name: metadata.user?.first_name,
+    statusId: metadata.status?.status_id,
+    rewardStatus: metadata.status?.reward_status
+  }
+  return userData;
+};
+
 const extractUserId = (data: BenjiConnectEventData): string | undefined => {
   const raw = data.metadata?.user?.id ?? (data.metadata as any)?.user_id; // fallback if backend uses snake_case
   return raw == null ? undefined : String(raw);  // normalize to string
@@ -118,11 +141,11 @@ const normalizeToken = (token: BenjiConnectEventToken): string =>
 
 export interface BenjiConnectCallbackData {
   context: { namespace: string; version: string };
-  userId?: string;
 }
 
 export interface BenjiConnectOnSuccessCallbackData extends BenjiConnectCallbackData {
   token: string;
+  userData: BenjiConnectUserData;
 }
 
 export interface BenjiConnectOnErrorCallbackData extends BenjiConnectCallbackData  {
@@ -146,7 +169,7 @@ export const mapToOnSuccessCallbackData = (
 ): BenjiConnectOnSuccessCallbackData => {
   return {
     context: buildContext(message),
-    userId: extractUserId(data),
+    userData: extractUserData(data),
     token: normalizeToken(data.token),
   };
 };
@@ -157,7 +180,6 @@ export const mapToOnErrorCallbackData = (
 ): BenjiConnectOnErrorCallbackData => {
   return {
     context: buildContext(message),
-    userId: extractUserId(data),
     errorCode: data.errorCode,
     errorMessage: data.errorMessage,
   };
@@ -169,7 +191,6 @@ export const mapToOnExitCallbackData = (
 ): BenjiConnectOnExitCallbackData => {
   return {
     context: buildContext(message),
-    userId: extractUserId(data),
     reason: data.reason,
   };
 };
@@ -180,7 +201,6 @@ export const mapToOnEventCallbackData = (
 ): BenjiConnectOnEventCallbackData => {
   return {
     context: buildContext(message),
-    userId: extractUserId(data),
     type: message.type,
   };
 };

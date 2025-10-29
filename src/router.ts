@@ -2,6 +2,7 @@ import type {
   BenjiConnectEventMap,
   BenjiConnectEventMessage,
   BenjiConnectKnownEvent,
+  BenjiConnectUserData,
 } from './types';
 
 import {
@@ -18,13 +19,13 @@ type RouterConfig = {
   ) => void;
 
   // Flat callbacks for simplicity)
-  onSuccess: (token: string, userId?: string) => void;
-  onError: (errorCode: string, errorMessage: string, userId?: string) => void;
+  onSuccess: (token: string, userData?: BenjiConnectUserData) => void;
+  onError: (errorCode: string, errorMessage: string) => void;
   onExit: (reason?: string) => void;
 
   // Typed one-stream listener for consumers who want all events
   onEvent?: <K extends BenjiConnectKnownEvent>(
-    evt: { type: K; data: BenjiConnectEventMap[K] }
+    event: { type: K; data: BenjiConnectEventMap[K] }
   ) => void;
 
   close: () => void;
