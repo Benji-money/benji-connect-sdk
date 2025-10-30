@@ -1,6 +1,12 @@
 /// <reference path="./global.d.ts" />
 
-import type { BenjiConnectConfig, BenjiConnectOptions, BenjiConnectEventMap, BenjiConnectEnvironment } from './types';
+import type { 
+  BenjiConnectConfig, 
+  BenjiConnectOptions, 
+  BenjiConnectEventMap, 
+  BenjiConnectEnvironment 
+} from './types';
+import { buildContext } from './context';
 import { TypedEmitter } from './emitter';
 import { createMessageRouter } from './router';
 
@@ -25,6 +31,7 @@ class ConnectSDK {
     // validations
     if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
     if (typeof baseSDKConfig.onSuccess !== 'function') throw new Error('onSuccess callback is required');
+    if (typeof baseSDKConfig.onError !== 'function') throw new Error('onError callback is required');
     if (typeof baseSDKConfig.onExit !== 'function') throw new Error('onExit callback is required');
 
     // Produce an InternalSDKConfig (token intentionally absent at this point)
@@ -163,7 +170,14 @@ class ConnectSDK {
     document.body.removeChild(this.container!);
     this.iframe = null;
     this.container = null;
-    this.sdkConfig.onExit();
+    this.onExit('close'); // TODO: add more appropriate reason
+  }
+
+  onExit(reason: string) {
+    this.sdkConfig.onExit?.({
+      context: buildContext(),
+      reason: reason,
+    });
   }
 
   cleanup() {

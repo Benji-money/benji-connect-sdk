@@ -1,12 +1,16 @@
 import type {
+  BenjiConnectEventData,
   BenjiConnectEventMap,
   BenjiConnectEventMessage,
-  BenjiConnectKnownEvent,
-  BenjiConnectUserData,
+  BenjiConnectOnSuccessData,
+  BenjiConnectOnErrorData,
+  BenjiConnectOnExitData,
+  BenjiConnectOnEventData
 } from './types';
 
 import {
   BenjiConnectCallbackMapperMap,
+  mapToOnEventData
 } from './types';
 
 type RouterConfig = {
@@ -18,15 +22,10 @@ type RouterConfig = {
     detail: BenjiConnectEventMap[K]
   ) => void;
 
-  // Flat callbacks for simplicity)
-  onSuccess: (token: string, userData?: BenjiConnectUserData) => void;
-  onError: (errorCode: string, errorMessage: string) => void;
-  onExit: (reason?: string) => void;
-
-  // Typed one-stream listener for consumers who want all events
-  onEvent?: <K extends BenjiConnectKnownEvent>(
-    event: { type: K; data: BenjiConnectEventMap[K] }
-  ) => void;
+  onSuccess?: (data: BenjiConnectOnSuccessData) => void;
+  onError?: (data: BenjiConnectOnErrorData) => void;
+  onExit?: (data: BenjiConnectOnExitData) => void;
+  onEvent?: (data: BenjiConnectOnEventData) => void;
 
   close: () => void;
 
@@ -67,71 +66,54 @@ export function createMessageRouter(deps: RouterConfig) {
 
     console.log('benji-connect-sdk recieved message', message);
 
-    // Type events and route to callbacks
-    switch (message.type) {
+    try {
+      // Type events and route to callbacks
+      switch (message.type) {
 
-      case 'authSuccess': {
-
-        const eventMessage = message as BenjiConnectEventMessage<'authSuccess'>;
-        const eventData = eventMessage.data;
-        console.log('benji-connect-sdk typed event', eventMessage, eventData);
-
-        const callbackData = BenjiConnectCallbackMapperMap.authSuccess(eventMessage, eventData);
-        console.log('benji-connect-sdk typed callback', callbackData);
-        
-        try {
-          onEvent?.({ type: eventMessage.type, data: eventMessage.data });
-          onSuccess(callbackData.token, callbackData.userId);
-        } finally {
-          close();
+        case 'authSuccess': {
+          const m = message as BenjiConnectEventMessage<'authSuccess'>;
+          const callbackData = BenjiConnectCallbackMapperMap.authSuccess(m, m.data);
+          console.log('benji-connect-sdk authSuccess typed event', m, m.data);
+          console.log('benji-connect-sdk authSuccess typed callback', callbackData);
+          //emit('authSuccess', m.data); // transport fan-out
+          onEvent?.(mapToOnEventData(m, m.data)); // public event shape
+          onSuccess?.(callbackData);
+          break;
         }
-        break;
-      }
 
-      case 'authError': {
-
-        const eventMessage = message as BenjiConnectEventMessage<'authError'>;
-        const eventData = eventMessage.data;
-        console.log('benji-connect-sdk typed event', eventMessage, eventData);
-
-        const callbackData = BenjiConnectCallbackMapperMap.authError(eventMessage, eventData);
-        console.log('benji-connect-sdk typed callback', callbackData);
-        
-        try {
-          close(); // user exited; ensure teardown
-          onEvent?.({ type: eventMessage.type, data: eventMessage.data });
-          onError(callbackData.errorCode, callbackData.errorMessage, callbackData.userId);
-        } finally {
-          close();
+        case 'authError': {
+          const m = message as BenjiConnectEventMessage<'authError'>;
+          const callbackData = BenjiConnectCallbackMapperMap.authError(m, m.data);
+          console.log('benji-connect-sdk authError typed event', m, m.data);
+          console.log('benji-connect-sdk authError typed callback', callbackData);
+          //emit('authError', m.data);
+          onEvent?.(mapToOnEventData(m, m.data));
+          onError?.(callbackData);
+          break;
         }
-        break;
-      }
 
-      case 'authExit': {
-
-        const eventMessage = message as BenjiConnectEventMessage<'authExit'>;
-        const eventData = eventMessage.data;
-        console.log('benji-connect-sdk typed event', eventMessage, eventData);
-
-        const callbackData = BenjiConnectCallbackMapperMap.authExit(eventMessage, eventData);
-        console.log('benji-connect-sdk typed callback', callbackData);
-        
-        try {
-          close(); // user exited; ensure teardown
-          onEvent?.({ type: eventMessage.type, data: eventMessage.data });
-          onExit(callbackData.reason);
-        } finally {
-          close();
+        case 'authExit': {
+          const m = message as BenjiConnectEventMessage<'authExit'>;
+          const callbackData = BenjiConnectCallbackMapperMap.authExit(m, m.data);
+          console.log('benji-connect-sdk authExit typed event', m, m.data);
+          console.log('benji-connect-sdk authExit typed callback', callbackData);
+          //emit('authExit', m.data);
+          onEvent?.(mapToOnEventData(m, m.data));
+          onExit?.(callbackData);
+          break;
         }
-        break;
-      }
 
-      default: {
-        // Unknown (forward generically)
-        const unknownMessage = message as BenjiConnectEventMessage<any>;
-        onEvent?.({ type: unknownMessage.type, data: unknownMessage.data });
-        break;
+        default: {
+          // Unknown (forward generically)
+          const m = message as BenjiConnectEventMessage<any>;
+          console.log('benji-connect-sdk default typed event', m, m.data);
+          onEvent?.(mapToOnEventData(m, m.data as BenjiConnectEventData));
+          break;
+        }
       }
+    } finally {
+      // Close once per terminal event; all current events are terminal.
+      close();
     }
   };
 }
