@@ -176,7 +176,7 @@ class ConnectSDK {
   onExit(reason: string) {
     this.sdkConfig.onExit?.({
       context: buildContext(),
-      reason: reason,
+      trigger: reason,
     });
   }
 

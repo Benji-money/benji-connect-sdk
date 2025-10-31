@@ -35,10 +35,6 @@ export interface BenjiConnectError {
   errorMessage?: string; 
 }
 
-export type BenjiConnectExitReason = 
-  | 'closeButton' 
-  | 'unknown' ;
-
 export interface BenjiConnectUserData {
   id?: string;
   name?: string; 
@@ -46,9 +42,12 @@ export interface BenjiConnectUserData {
   rewardStatus?: string;
 }
 
-
-
-
+export enum BenjiConnectAuthAction {
+  Unknown = 'unknown',
+  Connect = 'connect',
+  Transfer = 'transfer',
+  Redeem = 'redeem',
+}
 
 /* ================== Transport Event Types ================== */
 
@@ -73,7 +72,7 @@ export interface BenjiConnectEventMetadata {
 export type BenjiConnectKnownEvent =
   | 'authSuccess'
   | 'authExit'
-  | 'authError';
+  | 'error';
 
 // Optional convenience alias (excludes the '*' catch-all key)
 export type BenjiConnectEventType = BenjiConnectKnownEvent;
@@ -88,12 +87,14 @@ export interface BenjiConnectEventData {
 }
 
 export interface BenjiConnectAuthSuccessEventData extends BenjiConnectEventData {
+  action: BenjiConnectAuthAction;
   token: BenjiConnectEventToken;
   userData: BenjiConnectUserData;
 }
 
 export interface BenjiConnectAuthExitEventData extends BenjiConnectEventData  {
-  reason?: string;
+  step?: string;
+  trigger?: string;
 }
 
 export interface BenjiConnectErrorEventData extends BenjiConnectEventData  {
@@ -107,7 +108,7 @@ export interface BenjiConnectErrorEventData extends BenjiConnectEventData  {
 export type BenjiConnectEventMap = {
   authSuccess: BenjiConnectAuthSuccessEventData;
   authExit: BenjiConnectAuthExitEventData;
-  authError: BenjiConnectErrorEventData;
+  error: BenjiConnectErrorEventData;
 
   // Optional catch-all fan-out
   '*': { type: BenjiConnectKnownEvent; data: BenjiConnectEventMap[BenjiConnectKnownEvent] };
@@ -130,12 +131,25 @@ export const isEventMessage = (x: unknown): x is BenjiConnectEventMessage => {
   return typeof t === 'string';
 };
 
+const extractAuthAction = (data: BenjiConnectEventData): BenjiConnectAuthAction => {
+  const rawData = data.metadata; // raw metadata
+  if (rawData == null) {
+    return BenjiConnectAuthAction.Unknown;
+  }
+  const action = (rawData as any).action;
+  if (typeof action === 'string' && action in BenjiConnectAuthAction) {
+    // Type assertion since enum values are strings
+    return action as BenjiConnectAuthAction;
+  }
+  return BenjiConnectAuthAction.Unknown;
+};
+
 const extractUserData = (data: BenjiConnectEventData): BenjiConnectUserData => {
-  const raw = data.metadata;
-  if (raw == null) {
+  const rawData = data.metadata;
+  if (rawData == null) {
     return {id: '', name: '', statusId: '', rewardStatus: ''};
   }
-  const metadata = raw as BenjiConnectEventMetadata;
+  const metadata = rawData as BenjiConnectEventMetadata;
   const userData = {
     id: extractUserId(data),
     name: metadata.user?.first_name,
@@ -170,7 +184,8 @@ export interface BenjiConnectOnErrorData extends BenjiConnectData  {
 }
 
 export interface BenjiConnectOnExitData extends BenjiConnectData  {
-  reason?: string;
+  step?: string;
+  trigger?: string;
 }
 
 export interface BenjiConnectOnEventData extends BenjiConnectData  {
@@ -191,24 +206,25 @@ export const mapToOnSuccessData = (
   };
 };
 
-export const mapToOnErrorData = (
-  message: BenjiConnectEventMessage<'authError'>,
-  data: BenjiConnectErrorEventData
-): BenjiConnectOnErrorData => {
-  return {
-    context: buildContext(),
-    errorCode: data.errorCode,
-    errorMessage: data.errorMessage,
-  };
-};
-
 export const mapToOnExitData = (
   message: BenjiConnectEventMessage<'authExit'>,
   data: BenjiConnectAuthExitEventData
 ): BenjiConnectOnExitData => {
   return {
     context: buildContext(),
-    reason: data.reason,
+    step: data.step,
+    trigger: data.trigger,
+  };
+};
+
+export const mapToOnErrorData = (
+  message: BenjiConnectEventMessage<'error'>,
+  data: BenjiConnectErrorEventData
+): BenjiConnectOnErrorData => {
+  return {
+    context: buildContext(),
+    errorCode: data.errorCode,
+    errorMessage: data.errorMessage,
   };
 };
 
@@ -225,13 +241,13 @@ export const mapToOnEventData = (
 
 export type BenjiConnectCallbackDataMap = {
   authSuccess: BenjiConnectOnSuccessData;
-  authError: BenjiConnectOnErrorData;
   authExit: BenjiConnectOnExitData;
+  error: BenjiConnectOnErrorData;
   '*': BenjiConnectOnEventData;
 };
 
 export const BenjiConnectCallbackMapperMap = {
   authSuccess: mapToOnSuccessData,
-  authError: mapToOnErrorData,
   authExit: mapToOnExitData,
+  error: mapToOnErrorData,
 } as const;
