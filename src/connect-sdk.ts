@@ -170,15 +170,16 @@ class ConnectSDK {
     document.body.removeChild(this.container!);
     this.iframe = null;
     this.container = null;
-    this.onExit('close'); // TODO: add more appropriate reason
+    //this.onExit('close'); // TODO: add more appropriate reason if this case needs to be handled?
   }
 
+  /*
   onExit(reason: string) {
     this.sdkConfig.onExit?.({
       context: buildContext(),
       trigger: reason,
     });
-  }
+  }*/
 
   cleanup() {
     if (this.iframe) this.close();
