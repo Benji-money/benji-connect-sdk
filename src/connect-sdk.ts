@@ -5,13 +5,12 @@ import type {
   BenjiConnectOptions, 
   BenjiConnectEventMap, 
   BenjiConnectEnvironment 
-} from './types';
+} from './types/types';
 import { buildContext } from './context';
-import { TypedEmitter } from './emitter';
-import { createMessageRouter } from './router';
+import { TypedEmitter } from './services/emitter';
+import { createMessageRouter } from './services/router';
 
 // @internal but not exported
-/** @internal */
 interface InternalConfig extends BenjiConnectConfig {
   authServiceUrl: string;
   authUrl: string;

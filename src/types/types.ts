@@ -1,4 +1,4 @@
-import { buildContext } from './context';
+import { buildContext } from '../context';
 
 export type BenjiConnectEnvironment = 'development' | 'sandbox' | 'production';
 

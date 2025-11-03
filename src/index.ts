@@ -9,4 +9,4 @@ export default ConnectSDK;
 export { ConnectSDK };
 
 // (Optional) bubble up public types
-export * from './types';
+export * from './types/types';

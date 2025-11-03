@@ -6,13 +6,13 @@ import type {
   BenjiConnectOnErrorData,
   BenjiConnectOnExitData,
   BenjiConnectOnEventData
-} from './types';
+} from '../types/types';
 
 import {
   BenjiConnectAuthAction,
   BenjiConnectCallbackMapperMap,
   mapToOnEventData
-} from './types';
+} from '../types/types';
 
 type RouterConfig = {
   expectedOrigin: string;
