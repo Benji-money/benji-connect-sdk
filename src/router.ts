@@ -83,6 +83,7 @@ export function createMessageRouter(deps: RouterConfig) {
           const callbackData = BenjiConnectCallbackMapperMap.FLOW_EXIT(m, m.data);
           onEvent?.(mapToOnEventData(m, m.data));
           onExit?.(callbackData);
+          close();
           break;
         }
 
