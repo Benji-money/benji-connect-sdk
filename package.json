@@ -2,16 +2,27 @@
   "name": "@benji-money/connect-sdk",
   "version": "1.0.4-beta.1",
   "description": "Benji Connect SDK for authentication and verification",
-  "main": "dist/connect-sdk.js",
-  "types": "dist/connect-sdk.d.ts",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "unpkg": "dist/connect-sdk.umd.js",
+  "jsdelivr": "dist/connect-sdk.umd.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && babel src/connect-sdk.js -o dist/connect-sdk.umd.js --source-maps",
-    "dev": "babel src/connect-sdk.js -o dist/connect-sdk.umd.js --source-maps --watch",
-    "prepack": "npm run build"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepack": "npm run build",
+    "connect-sdk:update": "npm run build && npx yalc push"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -28,17 +39,16 @@
   "author": "Benji Money",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@babel/cli": "^7.27.0",
-    "@babel/core": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
     "@changesets/cli": "^2.29.7",
-    "babel-plugin-transform-define": "^2.1.4"
+    "rimraf": "^6.0.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   },
   "bugs": {
     "url": "https://github.com/benji-money/benji-connect-sdk/issues"
   },
   "homepage": "https://github.com/benji-money/benji-connect-sdk#readme",
-  "dependencies": {
-    "rimraf": "^6.0.1"
+  "benji": {
+    "namespace": "benji-connect-sdk"
   }
 }
