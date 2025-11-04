@@ -1,6 +1,6 @@
 {
   "name": "@benji-money/connect-sdk",
-  "version": "1.0.3",
+  "version": "1.0.4-beta.4",
   "description": "Benji Connect SDK for authentication and verification",
   "type": "module",
   "main": "dist/index.cjs",
@@ -39,6 +39,7 @@
   "author": "Benji Money",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.7",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
