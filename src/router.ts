@@ -50,8 +50,6 @@ export function createMessageRouter(deps: RouterConfig) {
 
   return function handleMessage(event: MessageEvent<unknown>) {
 
-    console.log('benji-connect-sdk message event recieved', event);
-
     // Basic origin check
     if (!event || event.origin !== expectedOrigin) return;
 
@@ -65,7 +63,7 @@ export function createMessageRouter(deps: RouterConfig) {
     if (namespace && message.namespace && message.namespace !== namespace) return;
     if (version != null && message.version != null && String(message.version) !== String(version)) return;
 
-    console.log('benji-connect-sdk recieved message', message);
+    console.log('benji-connect-sdk recieved message', message.type);
 
     try {
       // Type events and route to callbacks
@@ -110,7 +108,6 @@ export function createMessageRouter(deps: RouterConfig) {
         default: {
           // Unknown (forward generically)
           const m = message as BenjiConnectEventMessage<any>;
-          console.log('benji-connect-sdk default EVENT typed event', m, m.data);
           onEvent?.(mapToOnEventData(m, m.data as BenjiConnectEventData));
           break;
         }
