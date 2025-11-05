@@ -1,19 +1,21 @@
 /// <reference path="./global.d.ts" />
-
+import { 
+  BENJI_CONNECT_AUTH_SERVICE_URL, 
+  BENJI_CONNECT_AUTH_URL, 
+  configure 
+} from './config';
 import type { 
   BenjiConnectConfig, 
   BenjiConnectOptions, 
   BenjiConnectEventMap, 
   BenjiConnectEnvironment 
 } from './types/types';
-import { buildContext } from './context';
 import { TypedEmitter } from './services/emitter';
 import { createMessageRouter } from './services/router';
+import { tracker } from './analytics/tracker';
 
 // @internal but not exported
 interface InternalConfig extends BenjiConnectConfig {
-  authServiceUrl: string;
-  authUrl: string;
   token?: string; // set after initialize()
 }
 
@@ -36,14 +38,16 @@ class ConnectSDK {
     // Produce an InternalSDKConfig (token intentionally absent at this point)
     this.sdkConfig = { 
       ...baseSDKConfig, 
-      ...this.urlsForEnvironment(baseSDKConfig.environment)
       // token is optional and will be added in initialize()
     };
 
     // normalize onEvent
     if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
 
-    const expectedOrigin = new URL(this.sdkConfig.authUrl).origin;
+    // set configuration for mode/environment based on consumer input at runtime
+    configure(config.environment);
+
+    const expectedOrigin = new URL(BENJI_CONNECT_AUTH_URL).origin;
 
     this.messageRouter = createMessageRouter({
       expectedOrigin,
@@ -56,27 +60,6 @@ class ConnectSDK {
       namespace: __NAMESPACE__,
       version: __VERSION__,
     });
-  }
-
-  // returns the URLs for each env
-  private urlsForEnvironment(environment: BenjiConnectEnvironment): Pick<InternalConfig, 'authServiceUrl' | 'authUrl'> {
-    if (environment === 'sandbox') {
-      return {
-        authServiceUrl: 'https://authservice-staging.withbenji.com',
-        authUrl: 'https://verifyapp-staging.withbenji.com',
-      };
-    }
-    if (environment === 'production') {
-      return {
-        authServiceUrl: 'https://authservice.withbenji.com',
-        authUrl: 'https://verifyapp.withbenji.com',
-      };
-    }
-    // development default
-    return {
-      authServiceUrl: 'https://authservice-staging.withbenji.com',
-      authUrl: 'http://localhost:3000',
-    };
   }
 
   private async getAuthToken(params: BenjiConnectOptions): Promise<string> {
@@ -92,7 +75,7 @@ class ConnectSDK {
     };
 
     try {
-      const response = await fetch(`${this.sdkConfig.authServiceUrl}/verify/token/create`, {
+      const response = await fetch(`${BENJI_CONNECT_AUTH_SERVICE_URL}/verify/token/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,16 +152,7 @@ class ConnectSDK {
     document.body.removeChild(this.container!);
     this.iframe = null;
     this.container = null;
-    //this.onExit('close'); // TODO: add more appropriate reason if this case needs to be handled?
   }
-
-  /*
-  onExit(reason: string) {
-    this.sdkConfig.onExit?.({
-      context: buildContext(),
-      trigger: reason,
-    });
-  }*/
 
   cleanup() {
     if (this.iframe) this.close();

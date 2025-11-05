@@ -1,3 +1,8 @@
+import { 
+  ENVIRONMENT, 
+  MIXPANEL_ACCESS_URL, 
+  MIXPANEL_PROJECT_TOKEN 
+} from '../config'
 import mixpanel from 'mixpanel-browser'
 import { useUserStore } from '@/stores/user'
 
@@ -6,15 +11,21 @@ class MixpanelService {
   private identifiedUserId: string | number | null = null
   private hasAliased = false
 
-  init(token: string) {
+  init() {
     if (this.initialized) return
+
+    const environment = ENVIRONMENT;
+    const debug = environment === 'development';
+    const token = MIXPANEL_PROJECT_TOKEN;
+    const accessURL = MIXPANEL_ACCESS_URL;
+    const host = new URL(accessURL).origin;
 
     try {
       mixpanel.init(token, {
-        debug: import.meta.env.MODE === 'development',
+        debug: debug,
         track_pageview: true,
         persistence: 'localStorage',
-        api_host: 'https://api.mixpanel.com',
+        api_host: host,
         loaded: () => {
           console.log('Mixpanel initialized successfully')
         }
