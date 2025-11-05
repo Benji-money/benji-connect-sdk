@@ -1,23 +1,21 @@
-import { 
-  ENVIRONMENT, 
-  MIXPANEL_ACCESS_URL, 
-  MIXPANEL_PROJECT_TOKEN 
-} from '../config'
 import mixpanel from 'mixpanel-browser'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '../stores/user'
+import { BenjiConnectEnvironment } from '../types/types'
 
-class MixpanelService {
-  private initialized = false
-  private identifiedUserId: string | number | null = null
-  private hasAliased = false
+export class MixpanelService {
+  static initialized = false;
+  private static identifiedUserId: string | number | null = null;
+  private static hasAliased = false;
 
-  init() {
-    if (this.initialized) return
+  static init(
+    environment: BenjiConnectEnvironment, 
+    token: string, 
+    accessURL: string
+  ) {
 
-    const environment = ENVIRONMENT;
+    if (this.initialized) return;
+
     const debug = environment === 'development';
-    const token = MIXPANEL_PROJECT_TOKEN;
-    const accessURL = MIXPANEL_ACCESS_URL;
     const host = new URL(accessURL).origin;
 
     try {
@@ -27,24 +25,27 @@ class MixpanelService {
         persistence: 'localStorage',
         api_host: host,
         loaded: () => {
-          console.log('Mixpanel initialized successfully')
+          console.log('SDK Mixpanel initialized successfully')
         }
-      })
+      });
 
-      this.initialized = true
+      this.initialized = true;
     } catch (error) {
-      console.error('Failed to initialize Mixpanel:', error)
+      console.error('Failed to initialize Mixpanel:', error);
       // Don't set initialized = true, so all subsequent calls will be skipped
     }
   }
 
-  track(eventName: string, properties?: Record<string, any>) {
+  static track(eventName: string, properties?: Record<string, any>) {
     if (!this.initialized) {
-      console.warn('Mixpanel not initialized')
-      return
+      console.warn('SDK Mixpanel not initialized');
+      return;
     }
 
+    console.log('SDK Mixpanel track', eventName, properties);
+
     try {
+      /*
       // Add user context if available (with safe access)
       let currentUser = null
       try {
@@ -75,63 +76,63 @@ class MixpanelService {
       }
 
       mixpanel.track(eventName, enrichedProperties)
+      */
+      mixpanel.track(eventName, properties);
     } catch (error) {
-      console.error('Error tracking Mixpanel event:', error)
+      console.error('Error tracking Mixpanel event:', error);
       // Event tracking failure should never break app flow
     }
   }
 
-  identify(userId: string | number) {
+  static identify(userId: string | number) {
     if (!this.initialized) {
-      console.warn('Mixpanel not initialized')
-      return
+      console.warn('Mixpanel not initialized');
+      return;
     }
 
     try {
-      const userIdStr = String(userId)
+      const userIdStr = String(userId);
 
       // If this is the first identification in this session, create an alias
       // This links all previous anonymous events to this user
       if (!this.hasAliased) {
-        mixpanel.alias(userIdStr)
-        this.hasAliased = true
-        console.log('Mixpanel user aliased (first identification):', userIdStr)
+        mixpanel.alias(userIdStr);
+        this.hasAliased = true;
+        console.log('Mixpanel user aliased (first identification):', userIdStr);
       } else {
         // For subsequent identifications, just identify
-        mixpanel.identify(userIdStr)
-        console.log('Mixpanel user identified:', userIdStr)
+        mixpanel.identify(userIdStr);
+        console.log('Mixpanel user identified:', userIdStr);
       }
 
-      this.identifiedUserId = userId
+      this.identifiedUserId = userId;
     } catch (error) {
-      console.error('Error identifying user in Mixpanel:', error)
+      console.error('Error identifying user in Mixpanel:', error);
     }
   }
 
-  setUserProperties(properties: Record<string, any>) {
+  static setUserProperties(properties: Record<string, any>) {
     if (!this.initialized) {
-      console.warn('Mixpanel not initialized')
+      console.warn('Mixpanel not initialized');
       return
     }
 
     try {
       mixpanel.people.set(properties)
     } catch (error) {
-      console.error('Error setting user properties in Mixpanel:', error)
+      console.error('Error setting user properties in Mixpanel:', error);
     }
   }
 
-  reset() {
-    if (!this.initialized) return
+  static reset() {
+    if (!this.initialized) return;
 
     try {
       mixpanel.reset()
-      this.identifiedUserId = null
-      this.hasAliased = false
+      this.identifiedUserId = null;
+      this.hasAliased = false;
     } catch (error) {
-      console.error('Error resetting Mixpanel:', error)
+      console.error('Error resetting Mixpanel:', error);
     }
   }
 }
-
-export default new MixpanelService()

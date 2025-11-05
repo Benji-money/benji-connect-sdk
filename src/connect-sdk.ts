@@ -1,18 +1,16 @@
 /// <reference path="./global.d.ts" />
 import { 
-  BENJI_CONNECT_AUTH_SERVICE_URL, 
-  BENJI_CONNECT_AUTH_URL, 
-  configure 
+  configure, 
+  Endpoints
 } from './config';
 import type { 
   BenjiConnectConfig, 
   BenjiConnectOptions, 
-  BenjiConnectEventMap, 
-  BenjiConnectEnvironment 
+  BenjiConnectEventMap
 } from './types/types';
+import { Tracker } from './services/tracker';
 import { TypedEmitter } from './services/emitter';
 import { createMessageRouter } from './services/router';
-import { tracker } from './analytics/tracker';
 
 // @internal but not exported
 interface InternalConfig extends BenjiConnectConfig {
@@ -29,7 +27,9 @@ class ConnectSDK {
   constructor(config: BenjiConnectConfig) {
     const baseSDKConfig: BenjiConnectConfig = { ...config };
 
-    // validations
+    console.log('SDK Initializing with config', config);
+
+    // Validations
     if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
     if (typeof baseSDKConfig.onSuccess !== 'function') throw new Error('onSuccess callback is required');
     if (typeof baseSDKConfig.onError !== 'function') throw new Error('onError callback is required');
@@ -41,13 +41,21 @@ class ConnectSDK {
       // token is optional and will be added in initialize()
     };
 
-    // normalize onEvent
+    // Normalize onEvent
     if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
 
-    // set configuration for mode/environment based on consumer input at runtime
+    // Set config for mode/environment based on consumer input at runtime
+    console.log('SDK configuring config env', config);
+    console.log('SDK configuring config env', config.environment);
     configure(config.environment);
 
-    const expectedOrigin = new URL(BENJI_CONNECT_AUTH_URL).origin;
+    // Configure tracker for new config
+    console.log('SDK configuring tracker');
+    Tracker.configure(); 
+
+    const expectedOrigin = new URL(Endpoints.benji_connect_auth_url).origin;
+
+    console.log('SDK expected origin', expectedOrigin);
 
     this.messageRouter = createMessageRouter({
       expectedOrigin,
@@ -75,7 +83,7 @@ class ConnectSDK {
     };
 
     try {
-      const response = await fetch(`${BENJI_CONNECT_AUTH_SERVICE_URL}/verify/token/create`, {
+      const response = await fetch(`${Endpoints.benji_connect_auth_service_url}/verify/token/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,6 +102,7 @@ class ConnectSDK {
 
   async initialize(params: BenjiConnectOptions) {
     (this.sdkConfig as any).token = await this.getAuthToken(params);
+    Tracker.trackSDKInitialized();
   }
 
   async openWithParams(params: BenjiConnectOptions) {
@@ -121,7 +130,7 @@ class ConnectSDK {
     } as CSSStyleDeclaration);
 
     // iframe
-    const url = new URL((this.sdkConfig as any).authUrl);
+    const url = new URL(Endpoints.benji_connect_auth_url);
     url.searchParams.set('code', (this.sdkConfig as any).token);
     url.searchParams.set('t', String(Date.now()));
 
@@ -144,6 +153,7 @@ class ConnectSDK {
     this.container.addEventListener('click', (e) => {
       if (e.target === this.container) this.close();
     });
+    Tracker.trackSDKOpened();
   }
 
   close() {
@@ -152,6 +162,7 @@ class ConnectSDK {
     document.body.removeChild(this.container!);
     this.iframe = null;
     this.container = null;
+    Tracker.trackSDKClosed();
   }
 
   cleanup() {

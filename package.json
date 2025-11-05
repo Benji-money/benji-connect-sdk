@@ -1,6 +1,6 @@
 {
   "name": "@benji-money/connect-sdk",
-  "version": "1.0.4-beta.4",
+  "version": "1.0.4-beta.7",
   "description": "Benji Connect SDK for authentication and verification",
   "type": "module",
   "main": "dist/index.cjs",
@@ -19,10 +19,14 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsup",
+    "build": "tsup --dts",
     "dev": "tsup --watch",
     "prepack": "npm run build",
-    "connect-sdk:update": "npm run build && npx yalc push"
+    "yalc:publish": "npm run build && yalc publish",
+    "yalc:push": "npm run build && yalc push --changed",
+    "yalc:watch": "run-p watch:build watch:push",
+    "watch:build": "tsup --watch", 
+    "watch:push": "yalc push --changed"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
