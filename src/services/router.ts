@@ -13,6 +13,7 @@ import {
   BenjiConnectCallbackMapperMap,
   mapToOnEventData
 } from '../types/types';
+import { Tracker } from './tracker';
 
 type RouterConfig = {
   expectedOrigin: string;
@@ -63,7 +64,7 @@ export function createMessageRouter(deps: RouterConfig) {
     if (namespace && message.namespace && message.namespace !== namespace) return;
     if (version != null && message.version != null && String(message.version) !== String(version)) return;
 
-    console.log('benji-connect-sdk recieved message', message.type);
+    Tracker.trackEvent(message.type, message.data);
 
     try {
       // Type events and route to callbacks

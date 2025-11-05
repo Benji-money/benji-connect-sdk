@@ -20,10 +20,6 @@ export function configure(mode: BenjiConnectEnvironment) {
     data = developmentConfig;
   }
   console.log('SDK Configured config data', data);
-  console.log('SDK Configured config BENJI_CONNECT_AUTH_URL', Endpoints.benji_connect_auth_url);
-  console.log('SDK Configured config BENJI_CONNECT_AUTH_SERVICE_URL', Endpoints.benji_connect_auth_service_url);
-  console.log('SDK Configured config MIXPANEL_ACCESS_URL', Endpoints.mixpanel_access_url);
-  console.log('SDK Configured config mixpanel_project_token', Credentials.mixpanel_project_token);
 }
 
 export const Endpoints = Object.fromEntries(

@@ -45,17 +45,12 @@ class ConnectSDK {
     if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
 
     // Set config for mode/environment based on consumer input at runtime
-    console.log('SDK configuring config env', config);
-    console.log('SDK configuring config env', config.environment);
     configure(config.environment);
 
-    // Configure tracker for new config
-    console.log('SDK configuring tracker');
+    // Configure tracker for new config environment
     Tracker.configure(); 
 
     const expectedOrigin = new URL(Endpoints.benji_connect_auth_url).origin;
-
-    console.log('SDK expected origin', expectedOrigin);
 
     this.messageRouter = createMessageRouter({
       expectedOrigin,
