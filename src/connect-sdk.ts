@@ -67,7 +67,7 @@ class ConnectSDK {
         partner_id: params.partnerId,
         merchant_id: params.merchantId
       } : {}),
-      display_name: params.displayName,
+      display_name: params.merchantName,
       ...(params.partnershipId ? { partnership_id: params.partnershipId } : {})
     };
 
@@ -90,6 +90,7 @@ class ConnectSDK {
   }
 
   async initialize(params: BenjiConnectOptions) {
+    Tracker.configureWithOptions(params);
     (this.sdkConfig as any).token = await this.getAuthToken(params);
     Tracker.trackSDKInitialized();
   }

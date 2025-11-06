@@ -1,6 +1,9 @@
 import mixpanel from 'mixpanel-browser'
-import { useUserStore } from '../stores/user'
-import { BenjiConnectEnvironment } from '../types/types'
+
+import { 
+  BenjiConnectEnvironment, 
+  BenjiConnectUserData 
+} from '../types/types'
 
 export class MixpanelService {
   static initialized = false;
@@ -36,6 +39,26 @@ export class MixpanelService {
     }
   }
 
+  // Configure with BenjiConnectUserData if needed
+  // Example: identify user with Mixpanel
+  static configureWithUserData(data: BenjiConnectUserData) {
+    if (data.id && this.identifiedUserId !== data.id) {
+      console.log('mixpanel currentUser', data.id)
+      this.identify(data.id)
+    }
+  }
+
+  // Configure with event properties if needed
+  // Example: identify user with Mixpanel
+  static configureWithProperties(properties?: Record<string, any>) {
+    if (properties) {
+      const userId: string = properties['user_id'];
+      if(userId && this.identifiedUserId != userId) {
+        this.identify(userId);
+      }
+    }
+  }
+
   static track(eventName: string, properties?: Record<string, any>) {
     if (!this.initialized) {
       console.warn('SDK Mixpanel not initialized');
@@ -45,38 +68,7 @@ export class MixpanelService {
     console.log('SDK Mixpanel track', eventName, properties);
 
     try {
-      /*
-      // Add user context if available (with safe access)
-      let currentUser = null
-      try {
-        const userStore = useUserStore()
-        currentUser = userStore.user
-      } catch (storeError) {
-        // Gracefully handle cases where store is not available
-        console.warn('User store not available for Mixpanel context')
-      }
-
-      // Auto-identify user if we have one and haven't identified them yet
-      if (currentUser && currentUser.id && this.identifiedUserId !== currentUser.id) {
-        console.log('mixpanel currentUser', currentUser)
-        this.identify(currentUser.id)
-      }
-
-      const enrichedProperties = {
-        ...properties,
-        ...(currentUser && {
-          user_id: currentUser.id,
-          user_first_name: currentUser.firstName,
-          user_email: currentUser.email,
-          user_phone: currentUser.phoneNumber
-          // Add other user properties as needed
-        }),
-        timestamp: new Date().toISOString(),
-        environment: import.meta.env.MODE
-      }
-
-      mixpanel.track(eventName, enrichedProperties)
-      */
+      this.configureWithProperties(properties);
       mixpanel.track(eventName, properties);
     } catch (error) {
       console.error('Error tracking Mixpanel event:', error);

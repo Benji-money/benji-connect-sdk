@@ -23,9 +23,10 @@ export interface BenjiConnectConfig {
 
 export interface BenjiConnectOptions {
   userExternalId?: string;
+  userId?: string;
   partnerId?: string;
   merchantId?: string;
-  displayName?: string;
+  merchantName?: string;
   partnershipId?: string;
   mode?: 1 | 2;
 }
@@ -164,7 +165,7 @@ const extractAuthAction = (data: BenjiConnectEventData): BenjiConnectAuthAction 
   return BenjiConnectAuthAction.Unknown;
 };
 
-const extractUserData = (data: BenjiConnectEventData): BenjiConnectUserData => {
+export const extractUserData = (data: BenjiConnectEventData): BenjiConnectUserData => {
   const rawData = data.metadata;
   if (rawData == null) {
     return {id: '', name: '', statusId: '', rewardStatus: ''};

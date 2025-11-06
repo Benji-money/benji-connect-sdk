@@ -16,6 +16,7 @@ import type {
 import {
   BenjiConnectAuthAction,
   BenjiConnectCallbackMapperMap,
+  extractUserData,
   mapToOnEventData
 } from '../types/types';
 
@@ -114,6 +115,8 @@ export class MessageRouter {
   
           case 'AUTH_SUCCESS': {
             const m = message as BenjiConnectEventMessage<'AUTH_SUCCESS'>;
+            const userData = extractUserData(m.data);
+            Tracker.configureWithUserData(userData);
             Tracker.trackEventMessageReceived(m);
             const callbackData = BenjiConnectCallbackMapperMap.AUTH_SUCCESS(m, m.data);
             this.onEvent?.(callbackData);      

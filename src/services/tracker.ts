@@ -6,8 +6,12 @@ import {
   Namespace,
   Version
 } from '../config'
+import { 
+  BenjiConnectEventMessage, 
+  BenjiConnectOptions, 
+  BenjiConnectUserData
+} from '../types/types';
 import { TrackEventName } from '../types/tracker';
-import { BenjiConnectEventMessage } from '../types/types';
 import { BugsnagService } from './bugsnag';
 import { MixpanelService } from './mixpanel';
 
@@ -37,6 +41,8 @@ function ensureBugsnag() {
 export class Tracker {
 
   static configured = false;
+  static connectOptions?: BenjiConnectOptions;
+  static userData?: BenjiConnectUserData;
 
   static configureTracker() {
     if (this.configured) return;
@@ -53,6 +59,16 @@ export class Tracker {
     ensureMixpanel();
   }
 
+  static configureWithOptions(options: BenjiConnectOptions) {
+    this.connectOptions = options;
+  }
+
+  static configureWithUserData(data?: BenjiConnectUserData) {
+    if (!data) return;
+    this.userData = data;
+    MixpanelService.configureWithUserData(data);
+  }
+
   static reset() {
     BugsnagService.reset();
     MixpanelService.reset();
@@ -65,12 +81,27 @@ export class Tracker {
       'mode' : Mode,
       'namespace' : Namespace,
       'version' : Version,
+      'timestamp' :  new Date().toISOString(),
       ...(properties ?? {}), // spread original properties if defined
     };
-    enhanced['merchant_name'] = '';
+    if (this.connectOptions?.merchantId) {
+      enhanced['merchant_id'] = this.connectOptions?.merchantId;
+    }
+    if (this.connectOptions?.partnerId) {
+      enhanced['partner_id'] = this.connectOptions?.partnerId;
+    }
+    if (this.connectOptions?.merchantName) {
+      enhanced['merchant_name'] = this.connectOptions?.merchantName;
+    }
+    if (this.userData?.id) {
+      enhanced['user_id'] = this.userData?.id;
+    }
+  /*
+   * TODO: Fill out other properties below
+   */
+  /*
     enhanced['partner_name'] = '';
-    enhanced['partnership_id'] = '';
-    enhanced['user_id'] = '';
+    */
     return enhanced;
   }
 
