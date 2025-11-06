@@ -8,5 +8,5 @@ import ConnectSDK from './connect-sdk';
 export default ConnectSDK;
 export { ConnectSDK };
 
-// (Optional) bubble up public types
+// Expose Public types
 export * from './types/types';

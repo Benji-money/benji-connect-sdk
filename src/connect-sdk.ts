@@ -1,16 +1,17 @@
 /// <reference path="./global.d.ts" />
 import { 
-  configure, 
+  configureConfig, 
   Endpoints
 } from './config';
-import type { 
-  BenjiConnectConfig, 
-  BenjiConnectOptions, 
-  BenjiConnectEventMap
+
+import { 
+  type BenjiConnectConfig, 
+  type BenjiConnectOptions, 
+  BenjiConnectMode
 } from './types/types';
+
+import { MessageRouter } from './router/message';
 import { Tracker } from './services/tracker';
-import { TypedEmitter } from './services/emitter';
-import { createMessageRouter } from './services/router';
 
 // @internal but not exported
 interface InternalConfig extends BenjiConnectConfig {
@@ -18,15 +19,14 @@ interface InternalConfig extends BenjiConnectConfig {
 }
 
 class ConnectSDK {
+
   private sdkConfig: InternalConfig;
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
-  private messageRouter?: (e: MessageEvent) => void;
-  public events = new TypedEmitter<BenjiConnectEventMap>();
 
   constructor(config: BenjiConnectConfig) {
-    const baseSDKConfig: BenjiConnectConfig = { ...config };
 
+    const baseSDKConfig: BenjiConnectConfig = { ...config };
     console.log('SDK Initializing with config', config);
 
     // Validations
@@ -45,23 +45,17 @@ class ConnectSDK {
     if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
 
     // Set config for mode/environment based on consumer input at runtime
-    configure(config.environment);
+    configureConfig(config.environment, BenjiConnectMode.CONNECT); // For now only in connect mode
 
     // Configure tracker for new config environment
-    Tracker.configure(); 
+    Tracker.configureTracker(); 
 
-    const expectedOrigin = new URL(Endpoints.benji_connect_auth_url).origin;
-
-    this.messageRouter = createMessageRouter({
-      expectedOrigin,
+    MessageRouter.configureMessageRouter({
       onSuccess: this.sdkConfig.onSuccess,
       onError: this.sdkConfig.onError,
       onExit: this.sdkConfig.onExit,
       onEvent: this.sdkConfig.onEvent,
-      emit: (t, d) => this.events.emit(t, d as any),
-      close: () => this.close(),
-      namespace: __NAMESPACE__,
-      version: __VERSION__,
+      close: () => this.close()
     });
   }
 
@@ -143,21 +137,23 @@ class ConnectSDK {
     this.container.appendChild(this.iframe);
     document.body.appendChild(this.container);
 
-    window.addEventListener('message', this.messageRouter!);
+    MessageRouter.addEventListeners();
 
+    // TODO: Move to message router? 
     this.container.addEventListener('click', (e) => {
       if (e.target === this.container) this.close();
     });
+
     Tracker.trackSDKOpened();
   }
 
   close() {
     if (!this.iframe) return;
-    window.removeEventListener('message', this.messageRouter!);
+    MessageRouter.removeEventListeners();
+    Tracker.trackSDKClosed();
     document.body.removeChild(this.container!);
     this.iframe = null;
     this.container = null;
-    Tracker.trackSDKClosed();
   }
 
   cleanup() {

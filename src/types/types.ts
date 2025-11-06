@@ -1,6 +1,16 @@
 import { buildContext } from '../context';
 
-export type BenjiConnectEnvironment = 'development' | 'sandbox' | 'production';
+export enum BenjiConnectEnvironment {
+  DEVELOPMENT = 'development',
+  TRANSFER = 'sandbox',
+  REDEEM = 'production'
+}
+
+export enum BenjiConnectMode {
+  CONNECT = 1,
+  TRANSFER = 3,
+  REDEEM = 4
+}
 
 export interface BenjiConnectConfig {
   environment: BenjiConnectEnvironment;

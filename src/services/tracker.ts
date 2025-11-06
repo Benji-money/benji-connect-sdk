@@ -1,8 +1,9 @@
-import { track } from 'mixpanel-browser';
 import { 
-  environment,
   Credentials,
-  Endpoints
+  Endpoints,
+  Environment,
+  Namespace,
+  Version
 } from '../config'
 import { TrackEventName } from '../types/tracker';
 import { BugsnagService } from './bugsnag';
@@ -18,7 +19,7 @@ function ensureMixpanel() {
   }
 
   if (!MixpanelService.initialized) {
-    MixpanelService.init(environment, token, accessURL);
+    MixpanelService.init(Environment, token, accessURL);
   }
   
   return true;
@@ -33,7 +34,7 @@ function ensureBugsnag() {
   }
 
   if (!BugsnagService.initialized) {
-    BugsnagService.init(environment, apiKey);
+    BugsnagService.init(Environment, apiKey);
   }
 
   return true;
@@ -41,32 +42,13 @@ function ensureBugsnag() {
 
 export class Tracker {
 
-  static configured = false
+  static configured = false;
 
-  /*
-  variables sdk may want to know about for tracking...
-  ?
-  merchant_name
-  partner_name
-  partnership_id
-  user_id
-  ?
-  */
-
-  static errorEventHandler = (event: Event) => { 
-    return Tracker.handleErrorMessage(event) 
-  };
-
-  static configure() {
+  static configureTracker() {
     if (this.configured) return;
     this.configureBugsnag();
     this.configureMixpanel();
-    this.configureEventListeners();
     this.configured = true;
-
-    // Testing error handling
-    Promise.reject(new Error('Test rejection'));
-    throw new Error('Test error');
   }
 
   static configureBugsnag() {
@@ -77,46 +59,23 @@ export class Tracker {
     ensureMixpanel();
   }
 
-  static configureEventListeners() {
-    window.addEventListener('error', this.errorEventHandler);
-    window.addEventListener('unhandledrejection', this.errorEventHandler);
-  }
-
   static reset() {
     BugsnagService.reset();
     MixpanelService.reset();
-    this.resetEventListeners();
     this.configured = false;
   }
 
-  static resetEventListeners() {
-    window.removeEventListener('error', this.errorEventHandler);
-    window.removeEventListener('unhandledrejection', this.errorEventHandler);
-  }
-
-  static handleErrorMessage(event: Event) {   
-    switch(event.type) {
-      case 'error': {
-        const errorEvent = event as ErrorEvent;
-        console.log('SDK Received Error event', errorEvent);
-        const error = errorEvent.error || new Error(errorEvent.message);
-        this.trackError(error);
-        break;
-      }
-      case 'unhandledrejection': {
-        const rejectionEvent = event as PromiseRejectionEvent;
-        console.log('SDK Received Rejection event', rejectionEvent);
-        const reason = rejectionEvent.reason instanceof Error
-          ? rejectionEvent.reason
-          : new Error(String(rejectionEvent.reason));
-        this.trackError(reason);
-        break;
-      }
-      default: {
-        console.log('SDK Received Unknown error message', event);
-        break;
-      }
-    }
+  static insertProperties() {
+    let properties: Record<string, any> = {
+      'environment' : Environment,
+      'mode' : Environment,
+      'namespace' : Namespace,
+      'version' : Version
+    };
+    properties['merchant_name'] = '';
+    properties['partner_name'] = '';
+    properties['partnership_id'] = '';
+    properties['user_id'] = '';
   }
 
   static trackError(error: Error) {

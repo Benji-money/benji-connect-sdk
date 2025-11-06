@@ -1,7 +1,7 @@
 import * as productionConfig from './production';
 import * as sandboxConfig from './sandbox';
 import * as developmentConfig from './development';
-import { BenjiConnectEnvironment } from '../types/types';
+import { BenjiConnectEnvironment, BenjiConnectMode } from '../types/types';
 
 const env =
   typeof import.meta !== 'undefined' && 'env' in import.meta
@@ -9,16 +9,20 @@ const env =
     : (typeof process !== 'undefined' ? process.env : {});
 let data = developmentConfig;
 
-export function configure(mode: BenjiConnectEnvironment) {
+export function configureConfig(
+  environment: BenjiConnectEnvironment, 
+  mode: BenjiConnectMode
+) {
   console.log('SDK Configuring config default data', data);
   console.log('SDK Configuring config...', mode);
-  if (mode == 'production') {
+  if (environment == 'production') {
     data = productionConfig;
-  } else if (mode == 'sandbox') {
+  } else if (environment == 'sandbox') {
     data = sandboxConfig;
-  } else if (mode == 'development') {
+  } else if (environment == 'development') {
     data = developmentConfig;
   }
+  Mode = mode;
   console.log('SDK Configured config data', data);
 }
 
@@ -36,5 +40,8 @@ export const Credentials = Object.fromEntries(
   ])
 );
 
-export const environment: BenjiConnectEnvironment = data["project_environment"] as BenjiConnectEnvironment;
+export const Environment: BenjiConnectEnvironment = data["project_environment"] as BenjiConnectEnvironment;
+export let Mode: BenjiConnectMode = 1;
+export const Namespace = __NAMESPACE__;
+export const Version = __VERSION__;
 
