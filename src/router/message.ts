@@ -6,23 +6,25 @@ import {
 
 import type {
   BenjiConnectEventData,
-  BenjiConnectEventMessage,
+  BenjiConnectEventMessage
+} from '../types/event';
+
+import type {
   BenjiConnectOnSuccessData,
   BenjiConnectOnErrorData,
   BenjiConnectOnExitData,
-  BenjiConnectOnEventData
-} from '../types/types';
+  BenjiConnectOnEventData,
+  MessageRouterConfig
+} from '../types/router';
 
 import {
-  BenjiConnectAuthAction,
   BenjiConnectCallbackMapperMap,
-  extractUserData,
   mapToOnEventData
-} from '../types/types';
-
-import { MessageRouterConfig } from '../types/router';
+} from '../types/router';
 
 import { Tracker } from '../services/tracker';
+import { extractUserData } from '../utils/types';
+import { BenjiConnectAuthAction } from '../types/auth';
 
 export class MessageRouter {
 

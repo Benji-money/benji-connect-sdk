@@ -1,9 +1,6 @@
 import mixpanel from 'mixpanel-browser'
-
-import { 
-  BenjiConnectEnvironment, 
-  BenjiConnectUserData 
-} from '../types/types'
+import { BenjiConnectEnvironment } from '../types/config'
+import { BenjiConnectUserData } from '../types/user';
 
 export class MixpanelService {
   static initialized = false;

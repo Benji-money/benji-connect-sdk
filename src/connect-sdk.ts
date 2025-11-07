@@ -1,4 +1,5 @@
 /// <reference path="./global.d.ts" />
+
 import { 
   configureConfig, 
   Endpoints
@@ -8,7 +9,7 @@ import {
   type BenjiConnectConfig, 
   type BenjiConnectOptions, 
   BenjiConnectMode
-} from './types/types';
+} from './types/config';
 
 import { MessageRouter } from './router/message';
 import { Tracker } from './services/tracker';

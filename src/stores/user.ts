@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
-import { 
-  BenjiConnectAuthSuccessEventData, 
-  BenjiConnectUserData 
-} from '../types/types';
+import { BenjiConnectAuthSuccessEventData } from '../types/event';
+import { BenjiConnectUserData } from '../types/user';
 
 export const useUserStore = defineStore('user', {
   state: () => ({

@@ -6,12 +6,11 @@ import {
   Namespace,
   Version
 } from '../config'
-import { 
-  BenjiConnectEventMessage, 
-  BenjiConnectOptions, 
-  BenjiConnectUserData
-} from '../types/types';
+
+import { BenjiConnectOptions } from '../types/config';
+import { BenjiConnectEventMessage } from '../types/event';
 import { TrackEventName } from '../types/tracker';
+import { BenjiConnectUserData } from '../types/user';
 import { BugsnagService } from './bugsnag';
 import { MixpanelService } from './mixpanel';
 
@@ -75,8 +74,8 @@ export class Tracker {
     this.configured = false;
   }
 
-  static enhancedProperties(properties?: Record<string, any>) {
-    let enhanced: Record<string, any> = {
+  static enrichedProperties(properties?: Record<string, any>) {
+    let enriched: Record<string, any> = {
       'environment' : Environment,
       'mode' : Mode,
       'namespace' : Namespace,
@@ -85,30 +84,30 @@ export class Tracker {
       ...(properties ?? {}), // spread original properties if defined
     };
     if (this.connectOptions?.merchantId) {
-      enhanced['merchant_id'] = this.connectOptions?.merchantId;
+      enriched['merchant_id'] = this.connectOptions?.merchantId;
     }
     if (this.connectOptions?.partnerId) {
-      enhanced['partner_id'] = this.connectOptions?.partnerId;
+      enriched['partner_id'] = this.connectOptions?.partnerId;
+    }
+    if (this.connectOptions?.partnershipId) {
+      enriched['partnership_id'] = this.connectOptions?.partnershipId;
     }
     if (this.connectOptions?.merchantName) {
-      enhanced['merchant_name'] = this.connectOptions?.merchantName;
+      enriched['merchant_name'] = this.connectOptions?.merchantName;
     }
     if (this.userData?.id) {
-      enhanced['user_id'] = this.userData?.id;
+      enriched['user_id'] = this.userData?.id;
     }
   /*
    * TODO: Fill out other properties below
    */
-  /*
-    enhanced['partner_name'] = '';
-    */
-    return enhanced;
+    return enriched;
   }
 
   static trackError(error: Error) {
     console.log('SDK Tracking error', error);
-    // Todo: Add properties? 
-    BugsnagService.track(error);
+    const metadata = this.enrichedProperties();
+    BugsnagService.track(error, metadata);
   }
 
   static trackEventMessageReceived(message: BenjiConnectEventMessage) {
@@ -121,7 +120,7 @@ export class Tracker {
   }
 
   static trackEvent(eventName: string, properties?: Record<string, any>) {
-    const eventProperties = this.enhancedProperties(properties);
+    const eventProperties = this.enrichedProperties(properties);
     MixpanelService.track(eventName, eventProperties);
   }
 

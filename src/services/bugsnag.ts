@@ -1,5 +1,5 @@
 import Bugsnag from '@bugsnag/js'
-import { BenjiConnectEnvironment } from '../types/types';
+import { BenjiConnectEnvironment } from '../types/config';
 
 export class BugsnagService {
   static initialized = false
@@ -16,6 +16,7 @@ export class BugsnagService {
       releaseStage: environment,
       enabledReleaseStages: ['production', 'staging', 'development'],
       onError: function (event) {
+        console.log('Bugsnag onError in start callback', event);
         /*try {
           const userStore = useUserStore()
           const currentUser = userStore.user
@@ -43,39 +44,26 @@ export class BugsnagService {
     }
   }
 
-
-/*
-import { useUserStore } from '@/stores/user'
-
-const addUserData = (event: any) => {
-  try {
-    const userStore = useUserStore()
-    const currentUser = userStore.user
-
-    if (currentUser) {
-      event.setUser(
-        String(currentUser.id),
-        undefined,
-        undefined
-      )
+  static addUserData = (event: any, metadata?: Record<string, any>) => {
+    if (!metadata) return;
+    const userId = metadata['user_id'];
+    if(userId) {
+      event.setUser(String(userId), undefined, undefined);
     }
-  } catch (error) {
-    console.error('Error setting Bugsnag user data:', error)
   }
-}
-*/
 
   static track(error: Error | unknown, metadata?: Record<string, any>) {
+    console.log('Bugsnag track(error');
     if (error instanceof Error) {
       Bugsnag.notify(error, (event) => {
-        //addUserData(event)
+        this.addUserData(event, metadata);
         if (metadata) {
           event.addMetadata('custom', metadata)
         }
       })
     } else {
       Bugsnag.notify(new Error(String(error)), (event) => {
-        //addUserData(event)
+        this.addUserData(event, metadata);
         if (metadata) {
           event.addMetadata('custom', metadata)
         }

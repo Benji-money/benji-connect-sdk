@@ -9,4 +9,4 @@ export default ConnectSDK;
 export { ConnectSDK };
 
 // Expose Public types
-export * from './types/types';
+export * from './types/config';

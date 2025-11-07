@@ -1,7 +1,11 @@
 import * as productionConfig from './production';
 import * as sandboxConfig from './sandbox';
 import * as developmentConfig from './development';
-import { BenjiConnectEnvironment, BenjiConnectMode } from '../types/types';
+
+import { 
+  BenjiConnectEnvironment, 
+  BenjiConnectMode 
+} from '../types/config';
 
 const env =
   typeof import.meta !== 'undefined' && 'env' in import.meta
