@@ -1,11 +1,3 @@
-
-/*export interface BenjiConnectUserData {
-  id?: string;
-  name?: string; 
-  statusId?: string;
-  rewardStatus?: string;
-}*/
-
 export interface BenjiConnectUserData {
   user: {
     id: number

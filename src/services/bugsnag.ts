@@ -1,5 +1,7 @@
 import Bugsnag from '@bugsnag/js'
+import BugsnagPerformance from '@bugsnag/browser-performance'
 import { BenjiConnectEnvironment } from '../types/config';
+import { Version } from '../config';
 
 export class BugsnagService {
   static initialized = false
@@ -13,21 +15,23 @@ export class BugsnagService {
 
     Bugsnag.start({
       apiKey: apiKey,
+      appVersion: Version,
       releaseStage: environment,
       enabledReleaseStages: ['production', 'staging', 'development'],
       onError: function (event) {
-        console.log('Bugsnag onError in start callback', event);
-        /*try {
-          const userStore = useUserStore()
-          const currentUser = userStore.user
-
-          if (currentUser) {
-            event.setUser(String(currentUser.id), undefined, undefined)
-          }
-        } catch (error) {
-          console.error('Error setting Bugsnag user data:', error)
-        }*/
+        console.log('Bugsnag in onError callback', event);
       }
+    })
+
+    BugsnagPerformance.start({
+      apiKey: apiKey,
+      appVersion: Version,
+      releaseStage: environment,
+      enabledReleaseStages: ['production', 'staging', 'development'],
+      onSpanEnd: [(span) => {
+        console.log('Bugsnag in onSpanEnd callback', span);
+        return true
+      }]
     })
 
     this.initialized = true;

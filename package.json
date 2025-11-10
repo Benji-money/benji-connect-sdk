@@ -25,7 +25,7 @@
     "yalc:publish": "npm run build && yalc publish",
     "yalc:push": "npm run build && yalc push --changed",
     "yalc:watch": "run-p watch:build watch:push",
-    "watch:build": "tsup --watch", 
+    "watch:build": "tsup --watch",
     "watch:push": "yalc push --changed"
   },
   "publishConfig": {
@@ -57,6 +57,7 @@
     "namespace": "benji-connect-sdk"
   },
   "dependencies": {
+    "@bugsnag/browser-performance": "^3.0.0",
     "@bugsnag/js": "^8.6.0",
     "mixpanel-browser": "^2.71.1",
     "pinia": "^3.0.4",

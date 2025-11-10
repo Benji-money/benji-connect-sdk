@@ -22,7 +22,7 @@ import {
 } from '../types/router';
 
 import { Tracker } from '../services/tracker';
-import { extractUserData } from '../utils/types';
+import { extractUserData } from '../utils/user';
 import { BenjiConnectAuthAction } from '../types/auth';
 
 export class MessageRouter {

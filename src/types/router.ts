@@ -11,7 +11,7 @@ import {
 
 import { 
   extractUserData 
-} from '../utils/types';
+} from '../utils/user';
 
 import { 
   BenjiConnectAuthSuccessData,
