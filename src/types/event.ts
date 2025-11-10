@@ -1,87 +1,69 @@
-import { BenjiConnectAuthAction } from "./auth";
+import { 
+  BenjiConnectAuthAction
+} from "./auth";
 import { BenjiConnectUserData } from "./user";
 
-export interface BenjiConnectError {
-  errorCode?: string;
-  errorMessage?: string; 
-}
-
 // Transport-layer token (raw, unprocessed from postMessage)
-export type BenjiConnectEventToken = string | { access_token: string; refresh_token?: string };
-
-// Transport-layer metadata (raw, unprocessed from postMessage)
-export interface BenjiConnectEventMetadata {
-  user?: {
-    id?: string | number;
-    first_name?: string
-    [k: string]: unknown;
-  };
-  status?: {
-    status_id?: string;
-    reward_status?: string;
-    [k: string]: unknown;
-  };
-  [k: string]: unknown;
+export interface BenjiConnectEventToken {
+  access_token: string;
+  refresh_token: string;
+  expires_at?: string | number;
 }
 
 // Known event names coming from the SDK transport (postMessage)
-export type BenjiConnectKnownEvent =
-  | 'AUTH_SUCCESS'
-  | 'FLOW_EXIT'
-  | 'FLOW_SUCCESS'
-  | 'EVENT'
-  | 'ERROR';
+export enum BenjiConnectEventType {
+  AUTH_SUCCESS = 'AUTH_SUCCESS',
+  FLOW_EXIT = 'FLOW_EXIT',
+  FLOW_SUCCESS = 'FLOW_SUCCESS',
+  EVENT = 'EVENT',
+  ERROR = 'ERROR',
+}
 
-// Convenience alias (excludes the '*' catch-all key)
-export type BenjiConnectEventType = BenjiConnectKnownEvent;
+// Known exit trigger types coming from the SDK transport (postMessage)
+export enum BenjiConnectExitTrigger {
+  BACK_TO_MERCHANT_CLICKED = 'BACK_TO_MERCHANT_CLICKED',
+  CLOSE_BUTTON_CLICKED = 'CLOSE_BUTTON_CLICKED',
+  TAPPED_OUT_OF_BOUNDS = 'TAPPED_OUT_OF_BOUNDS'
+}
 
+// Basic structure for typed event
 export interface BenjiConnectEvent {
   type: BenjiConnectEventType;
   data?: BenjiConnectEventData;
 }
 
 export interface BenjiConnectEventData {
-  metadata?: BenjiConnectEventMetadata;
+  [k: string]: unknown;
 }
 
-export interface BenjiConnectAuthSuccessEventData extends BenjiConnectEventData {
+export interface BenjiConnectEventMessage<K extends BenjiConnectEventType = BenjiConnectEventType> {
+  type: K; // discriminant
+  data: BenjiConnectEventDataMap[K];
+}
+
+export interface BenjiConnectAuthSuccessData {
   action: BenjiConnectAuthAction;
-  token: BenjiConnectEventToken;
-  userData: BenjiConnectUserData;
+  token?: BenjiConnectEventToken,
+  metadata?: BenjiConnectUserData | null;
 }
 
-export interface BenjiConnectAuthExitEventData extends BenjiConnectEventData  {
-  step?: string;
-  trigger?: string;
+export interface BenjiConnectFlowExitEventData {
+  step: string;
+  trigger: BenjiConnectExitTrigger;
 }
 
-export interface BenjiConnectFlowSuccessEventData extends BenjiConnectEventData {
-  action: BenjiConnectAuthAction;
-  token: BenjiConnectEventToken;
-  userData: BenjiConnectUserData;
-}
-
-export interface BenjiConnectErrorEventData extends BenjiConnectEventData  {
-  errorCode: string;
-  errorMessage: string;
+export interface BenjiConnectErrorEventData {
+  error: Error;
 }
 
 // Canonical event map 
-export type BenjiConnectEventMap = {
-  AUTH_SUCCESS: BenjiConnectAuthSuccessEventData;
-  FLOW_EXIT: BenjiConnectAuthExitEventData;
-  FLOW_SUCCESS: BenjiConnectFlowSuccessEventData;
-  EVENT: BenjiConnectEventData;
-  ERROR: BenjiConnectErrorEventData;
+export type BenjiConnectEventDataMap = {
+  [BenjiConnectEventType.AUTH_SUCCESS]: BenjiConnectAuthSuccessData;
+  [BenjiConnectEventType.FLOW_EXIT]: BenjiConnectFlowExitEventData;
+  [BenjiConnectEventType.FLOW_SUCCESS]: BenjiConnectAuthSuccessData;
+  [BenjiConnectEventType.EVENT]: BenjiConnectEventData;
+  [BenjiConnectEventType.ERROR]: BenjiConnectErrorEventData;
 
   // Optional catch-all fan-out
-  '*': { type: BenjiConnectKnownEvent; data: BenjiConnectEventMap[BenjiConnectKnownEvent] };
+  '*': { type: BenjiConnectEventType; data: BenjiConnectEventDataMap[BenjiConnectEventType] };
 };
-
-// Discriminated message envelope over postMessage
-export interface BenjiConnectEventMessage<K extends BenjiConnectKnownEvent = BenjiConnectKnownEvent> {
-  namespace?: string;           // namespace, e.g., 'benji-connect-sdk'
-  version?: string | number;    // sdk version
-  type: K;                      // discriminant
-  data: BenjiConnectEventMap[K];
-}

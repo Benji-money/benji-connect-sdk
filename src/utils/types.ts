@@ -1,3 +1,5 @@
+/*
+
 import { BenjiConnectAuthAction } from "../types/auth";
 
 import { 
@@ -28,21 +30,6 @@ const extractAuthAction = (data: BenjiConnectEventData): BenjiConnectAuthAction 
   return BenjiConnectAuthAction.Unknown;
 };
 
-export const extractUserData = (data: BenjiConnectEventData): BenjiConnectUserData => {
-  const rawData = data.metadata;
-  if (rawData == null) {
-    return {id: '', name: '', statusId: '', rewardStatus: ''};
-  }
-  const metadata = rawData as BenjiConnectEventMetadata;
-  const userData = {
-    id: extractUserId(data),
-    name: metadata.user?.first_name,
-    statusId: metadata.status?.status_id,
-    rewardStatus: metadata.status?.reward_status
-  }
-  return userData;
-};
-
 export const extractUserId = (data: BenjiConnectEventData): string | undefined => {
   const raw = data.metadata?.user?.id ?? (data.metadata as any)?.user_id; // fallback if backend uses snake_case
   return raw == null ? undefined : String(raw);  // normalize to string
@@ -50,3 +37,18 @@ export const extractUserId = (data: BenjiConnectEventData): string | undefined =
 
 export const normalizeToken = (token: BenjiConnectEventToken): string =>
   typeof token === 'string' ? token : (token?.access_token ?? '');
+*/
+
+import { BenjiConnectUserData } from "../types/user";
+
+export function extractUserData(
+  input: BenjiConnectUserData | null | undefined
+): BenjiConnectUserData | undefined {
+  if (!input) return undefined;
+
+  if ("user" in (input as any) && "status" in (input as any)) {
+    return input as BenjiConnectUserData;
+  }
+;
+  return undefined;
+}

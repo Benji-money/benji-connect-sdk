@@ -7,8 +7,8 @@ import {
 
 export enum BenjiConnectEnvironment {
   DEVELOPMENT = 'development',
-  TRANSFER = 'sandbox',
-  REDEEM = 'production'
+  SANDBOX = 'sandbox',
+  PRODUCTION = 'production'
 }
 
 export enum BenjiConnectMode {

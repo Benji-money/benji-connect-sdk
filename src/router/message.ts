@@ -1,12 +1,11 @@
 import { 
-  Endpoints,
-  Namespace, 
-  Version 
+  Endpoints
 } from '../config';
 
-import type {
-  BenjiConnectEventData,
-  BenjiConnectEventMessage
+import {
+  BenjiConnectEventType,
+  type BenjiConnectEventData,
+  type BenjiConnectEventMessage
 } from '../types/event';
 
 import type {
@@ -75,14 +74,12 @@ export class MessageRouter {
     switch(event.type) {
       case 'error': {
         const errorEvent = event as ErrorEvent;
-        console.log('SDK Received Error event', errorEvent);
         const error = errorEvent.error || new Error(errorEvent.message);
         Tracker.trackError(error);
         break;
       }
       case 'unhandledrejection': {
         const rejectionEvent = event as PromiseRejectionEvent;
-        console.log('SDK Received Rejection event', rejectionEvent);
         const reason = rejectionEvent.reason instanceof Error
           ? rejectionEvent.reason
           : new Error(String(rejectionEvent.reason));
@@ -104,20 +101,25 @@ export class MessageRouter {
       const raw = event.data;
       if (!raw || typeof raw !== 'object') return;
   
-      const message = raw as Partial<BenjiConnectEventMessage>;
-      if (typeof message.type !== 'string') return;
+      const partial = raw as Partial<BenjiConnectEventMessage>;
+      if (typeof partial.type !== 'string') return;
+      
+      const message = partial as BenjiConnectEventMessage;
+      console.log('Received message ', message);
   
       // Constraint checks
-      if (Namespace && message.namespace && message.namespace !== Namespace) return;
-      if (Version != null && message.version != null && String(message.version) !== String(Version)) return;
+      // if (Namespace && message.namespace && message.namespace !== Namespace) return;
+      // if (Version != null && message.version != null && String(message.version) !== String(Version)) return;
   
+      Tracker.trackEventMessageReceived(message);
+      
       try {
         // Type events and route to callbacks
         switch (message.type) {
   
-          case 'AUTH_SUCCESS': {
-            const m = message as BenjiConnectEventMessage<'AUTH_SUCCESS'>;
-            const userData = extractUserData(m.data);
+          case BenjiConnectEventType.AUTH_SUCCESS: {
+            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.AUTH_SUCCESS>;
+            const userData = extractUserData(m.data?.metadata);
             Tracker.configureWithUserData(userData);
             Tracker.trackEventMessageReceived(m);
             const callbackData = BenjiConnectCallbackMapperMap.AUTH_SUCCESS(m, m.data);
@@ -125,8 +127,8 @@ export class MessageRouter {
             break;
           }
   
-          case 'FLOW_EXIT': {
-            const m = message as BenjiConnectEventMessage<'FLOW_EXIT'>;
+          case BenjiConnectEventType.FLOW_EXIT: {
+            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_EXIT>;
             Tracker.trackEventMessageReceived(m);
             const callbackData = BenjiConnectCallbackMapperMap.FLOW_EXIT(m, m.data);
             this.onEvent?.(mapToOnEventData(m, m.data));
@@ -135,8 +137,8 @@ export class MessageRouter {
             break;
           }
   
-          case 'FLOW_SUCCESS': {
-            const m = message as BenjiConnectEventMessage<'FLOW_SUCCESS'>;
+          case BenjiConnectEventType.FLOW_SUCCESS: {
+            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_SUCCESS>;
             Tracker.trackEventMessageReceived(m);
             this.onEvent?.(mapToOnEventData(m, m.data)); // public event shape
   
@@ -148,8 +150,8 @@ export class MessageRouter {
             break;
           }
   
-          case 'ERROR': {
-            const m = message as BenjiConnectEventMessage<'ERROR'>;
+          case BenjiConnectEventType.ERROR: {
+            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.ERROR>;
             Tracker.trackEventMessageReceived(m);
             const callbackData = BenjiConnectCallbackMapperMap.ERROR(m, m.data);
             this.onEvent?.(mapToOnEventData(m, m.data));
