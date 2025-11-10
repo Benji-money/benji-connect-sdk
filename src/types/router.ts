@@ -1,17 +1,11 @@
+import { mapEventToConnectToken } from '../utils/auth';
 import { buildContext } from '../utils/config';
+import { mapEventToConnectUserData } from '../utils/user';
 
 import { 
   BenjiConnectAuthAction, 
   BenjiConnectAuthToken 
 } from './auth';
-
-import { 
-  mapEventToConnectToken
-} from '../utils/auth';
-
-import { 
-  extractUserData 
-} from '../utils/user';
 
 import { 
   BenjiConnectAuthSuccessData,
@@ -69,14 +63,11 @@ export const mapToAuthSuccessData = (
     context: buildContext(),
     action: data.action,
     token: mapEventToConnectToken(data.token),
-    userData: extractUserData(data.metadata)
+    userData: mapEventToConnectUserData(data.metadata)
   };
 };
 
-export const mapToOnExitData = (
-  message: BenjiConnectEventMessage<BenjiConnectEventType.FLOW_EXIT>,
-  data: BenjiConnectFlowExitEventData
-): BenjiConnectOnExitData => {
+export const mapToOnExitData = (data: BenjiConnectFlowExitEventData): BenjiConnectOnExitData => {
   return {
     context: buildContext(),
     step: data.step,
@@ -84,22 +75,16 @@ export const mapToOnExitData = (
   };
 };
 
-export const mapToOnSuccessData = (
-  message: BenjiConnectEventMessage<BenjiConnectEventType.FLOW_SUCCESS>,
-  data: BenjiConnectAuthSuccessData
-): BenjiConnectOnSuccessData => {
+export const mapToOnSuccessData = (data: BenjiConnectAuthSuccessData): BenjiConnectOnSuccessData => {
   return {
     context: buildContext(),
     action: data.action,
-    userData: extractUserData(data.metadata),
+    userData: mapEventToConnectUserData(data.metadata),
     token: mapEventToConnectToken(data.token),
   };
 };
 
-export const mapToOnErrorData = (
-  message: BenjiConnectEventMessage<BenjiConnectEventType.ERROR>,
-  data: BenjiConnectErrorEventData
-): BenjiConnectOnErrorData => {
+export const mapToOnErrorData = (data: BenjiConnectErrorEventData): BenjiConnectOnErrorData => {
   return {
     context: buildContext(),
     error: data.error

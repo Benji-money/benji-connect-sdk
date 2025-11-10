@@ -1,14 +1,4 @@
-import { 
-  BenjiConnectAuthAction
-} from "./auth";
-import { BenjiConnectUserData } from "./user";
-
-// Transport-layer token (raw, unprocessed from postMessage)
-export interface BenjiConnectEventToken {
-  access_token: string;
-  refresh_token: string;
-  expires_at?: string | number;
-}
+import { BenjiConnectAuthAction } from "./auth";
 
 // Known event names coming from the SDK transport (postMessage)
 export enum BenjiConnectEventType {
@@ -26,7 +16,35 @@ export enum BenjiConnectExitTrigger {
   TAPPED_OUT_OF_BOUNDS = 'TAPPED_OUT_OF_BOUNDS'
 }
 
-// Basic structure for typed event
+// Transport-layer token (raw, unprocessed from postMessage)
+export interface BenjiConnectEventToken {
+  access_token: string;
+  refresh_token: string;
+  expires_at?: string | number;
+}
+
+export interface BenjiConnectEventUserData {
+  user: {
+    id: number
+    first_name: string
+    last_name: string
+  }
+  status: BenjiConnectEventUserStatusData
+  extra_data?: {
+    total_rewards_earned?: number
+    total_rewards_redeemed?: number
+    created_date?: string
+  }
+}
+
+export interface BenjiConnectEventUserStatusData {
+  status_id: string
+  num_of_rewards: number
+  reward_status: string
+  partner_status_tier_id?: number
+}
+
+// Basic structure for Benji Connect SDK typed events
 export interface BenjiConnectEvent {
   type: BenjiConnectEventType;
   data?: BenjiConnectEventData;
@@ -44,7 +62,7 @@ export interface BenjiConnectEventMessage<K extends BenjiConnectEventType = Benj
 export interface BenjiConnectAuthSuccessData {
   action: BenjiConnectAuthAction;
   token?: BenjiConnectEventToken,
-  metadata?: BenjiConnectUserData | null;
+  metadata?: BenjiConnectEventUserData;
 }
 
 export interface BenjiConnectFlowExitEventData {

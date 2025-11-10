@@ -11,6 +11,12 @@ import { BenjiConnectOptions } from '../types/config';
 import { BenjiConnectEventMessage } from '../types/event';
 import { TrackEventName } from '../types/tracker';
 import { BenjiConnectUserData } from '../types/user';
+
+import { 
+  isConnectUserData, 
+  mapEventToConnectUserData 
+} from '../utils/user';
+
 import { BugsnagService } from './bugsnag';
 import { MixpanelService } from './mixpanel';
 
@@ -62,6 +68,18 @@ export class Tracker {
     this.connectOptions = options;
   }
 
+  static configureWithEvent(properties?: Record<string, any>) {
+
+    const metadata = properties?.data?.metadata;
+    if(!metadata) return;
+
+    const userData = mapEventToConnectUserData(metadata);
+
+    if(isConnectUserData(userData)) {
+      Tracker.configureWithUserData(userData);
+    }
+  }
+
   static configureWithUserData(data?: BenjiConnectUserData) {
     if (!data) return;
     this.userData = data;
@@ -95,8 +113,8 @@ export class Tracker {
     if (this.connectOptions?.merchantName) {
       enriched['merchant_name'] = this.connectOptions?.merchantName;
     }
-    if (this.userData?.id) {
-      enriched['user_id'] = this.userData?.id;
+    if (this.userData?.user.id) {
+      enriched['user_id'] = this.userData?.user.id;
     }
   /*
    * TODO: Fill out other properties below
@@ -120,7 +138,14 @@ export class Tracker {
   }
 
   static trackEvent(eventName: string, properties?: Record<string, any>) {
+
+    // First update Tracker state (e.g., user info from event properties)
+    Tracker.configureWithEvent(properties);
+
+    // Then enrich properties
     const eventProperties = this.enrichedProperties(properties);
+
+    // Track
     MixpanelService.track(eventName, eventProperties);
   }
 

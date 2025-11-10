@@ -39,9 +39,9 @@ export class MixpanelService {
   // Configure with BenjiConnectUserData if needed
   // Example: identify user with Mixpanel
   static configureWithUserData(data: BenjiConnectUserData) {
-    if (data.id && this.identifiedUserId !== data.id) {
-      console.log('mixpanel currentUser', data.id)
-      this.identify(data.id)
+    if (data.user.id && this.identifiedUserId !== data.user.id) {
+      console.log('mixpanel currentUser', data.user.id)
+      this.identify(data.user.id)
     }
   }
 

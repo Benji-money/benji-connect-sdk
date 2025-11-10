@@ -5,6 +5,9 @@ import {
   Endpoints
 } from './config';
 
+import { configureAuth } from './lib/auth';
+import { requestAuthToken } from './api/auth/requestAuthToken';
+
 import { 
   type BenjiConnectConfig, 
   type BenjiConnectOptions, 
@@ -60,39 +63,10 @@ class ConnectSDK {
     });
   }
 
-  private async getAuthToken(params: BenjiConnectOptions): Promise<string> {
-    const requestData: Record<string, unknown> = {
-      ...(params.userExternalId ? { user_external_id: params.userExternalId } : {}),
-      mode: params.mode || 1,
-      ...((!params.mode || params.mode !== 2) ? {
-        partner_id: params.partnerId,
-        merchant_id: params.merchantId
-      } : {}),
-      display_name: params.merchantName,
-      ...(params.partnershipId ? { partnership_id: params.partnershipId } : {})
-    };
-
-    try {
-      const response = await fetch(`${Endpoints.benji_connect_auth_service_url}/verify/token/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.sdkConfig.bearerToken}`
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      const json = await response.json();
-      return json?.data?.token as string;
-    } catch (error) {
-      console.error('Error in getAuthToken:', error);
-      throw error;
-    }
-  }
-
   async initialize(params: BenjiConnectOptions) {
+    configureAuth(this.sdkConfig, params);
+    (this.sdkConfig as any).token = await requestAuthToken();
     Tracker.configureWithOptions(params);
-    (this.sdkConfig as any).token = await this.getAuthToken(params);
     Tracker.trackSDKInitialized();
   }
 
@@ -139,21 +113,19 @@ class ConnectSDK {
     this.container.appendChild(this.iframe);
     document.body.appendChild(this.container);
 
-    MessageRouter.addEventListeners();
-
-    // TODO: Move to message router? 
     this.container.addEventListener('click', (e) => {
       if (e.target === this.container) this.close();
     });
 
+    MessageRouter.addEventListeners();
     Tracker.trackSDKOpened();
   }
 
   close() {
     if (!this.iframe) return;
+    document.body.removeChild(this.container!);
     MessageRouter.removeEventListeners();
     Tracker.trackSDKClosed();
-    document.body.removeChild(this.container!);
     this.iframe = null;
     this.container = null;
   }

@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { BenjiConnectAuthSuccessEventData } from '../types/event';
+/*import { defineStore } from 'pinia'
+import { BenjiConnectAuthSuccessData } from '../types/event';
 import { BenjiConnectUserData } from '../types/user';
 
 export const useUserStore = defineStore('user', {
@@ -7,8 +7,10 @@ export const useUserStore = defineStore('user', {
     userData: null as BenjiConnectUserData | null
   }),
   actions: {
-    refreshWithAuthSuccessData(data: BenjiConnectAuthSuccessEventData) {
+    refreshWithAuthSuccessData(data: BenjiConnectAuthSuccessData) {
       this.userData = data.userData;
     },
   }
 });
+
+*/
