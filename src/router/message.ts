@@ -13,12 +13,12 @@ import type {
   BenjiConnectOnExitData,
   BenjiConnectMetadata,
   BenjiConnectOnSuccessMetadata,
-  BenjiConnectOnExitMetadata,
-  MessageRouterConfig
-} from '../types/router';
+  BenjiConnectOnExitMetadata
+} from '../types/config';
 
 import {
   BenjiConnectCallbackMapperMap,
+  MessageRouterConfig,
   mapToOnEventData
 } from '../types/router';
 
@@ -149,13 +149,10 @@ export class MessageRouter {
           case BenjiConnectEventType.FLOW_SUCCESS: {
             const connectMessage = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_SUCCESS>;
             Tracker.trackEventMessageReceived(connectMessage);
-
-            console.log('SDK RECEIVED FLOW SUCCESS', connectMessage);
   
             // Only forward onSuccess if in connect auth flow
             if (connectMessage.data.action == BenjiConnectAuthAction.Connect) {
               const callbackData = BenjiConnectCallbackMapperMap.FLOW_SUCCESS(connectMessage.data) as BenjiConnectOnSuccessData;
-              console.log('SDK FORWARDING  ONSUCCESS', callbackData);
               this.onSuccess?.(callbackData.token, callbackData.metadata);
             }         
             break;

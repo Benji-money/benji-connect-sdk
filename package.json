@@ -59,8 +59,6 @@
   "dependencies": {
     "@bugsnag/browser-performance": "^3.0.0",
     "@bugsnag/js": "^8.6.0",
-    "mixpanel-browser": "^2.71.1",
-    "pinia": "^3.0.4",
-    "vue": "^3.5.22"
+    "mixpanel-browser": "^2.71.1"
   }
 }
