@@ -17,22 +17,15 @@ export class BugsnagService {
       apiKey: apiKey,
       appVersion: Version,
       releaseStage: environment,
-      enabledReleaseStages: ['production', 'staging', 'development'],
-      onError: function (event) {
-        console.log('Bugsnag in onError callback', event);
-      }
-    })
+      enabledReleaseStages: ['production', 'staging', 'development']
+    });
 
     BugsnagPerformance.start({
       apiKey: apiKey,
       appVersion: Version,
       releaseStage: environment,
-      enabledReleaseStages: ['production', 'staging', 'development'],
-      onSpanEnd: [(span) => {
-        console.log('Bugsnag in onSpanEnd callback', span);
-        return true
-      }]
-    })
+      enabledReleaseStages: ['production', 'staging', 'development']
+    });
 
     this.initialized = true;
   }

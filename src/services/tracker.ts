@@ -123,13 +123,13 @@ export class Tracker {
   }
 
   static trackError(error: Error) {
-    console.log('SDK Tracking error', error);
+    console.log('Tracking error', error);
     const metadata = this.enrichedProperties();
     BugsnagService.track(error, metadata);
   }
 
   static trackEventMessageReceived(message: BenjiConnectEventMessage) {
-    console.log('SDK Tracking event message', message);
+    console.log('Tracking event message', message);
     let properties: Record<string, any> = {
       'message_event_type' : message.type,
       'message_event_data' : message.data

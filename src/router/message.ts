@@ -71,8 +71,8 @@ export class MessageRouter {
     this.configuredListeners = true;
 
     // Test uncaught error handling
-    // Promise.reject(new Error('MessageRouter Test rejection'));
-    // throw new Error('MessageRouter Test error');
+    // Promise.reject(new Error('[Benji Connect SDK]  MessageRouter Test rejection'));
+    // throw new Error('[Benji Connect SDK] MessageRouter Test error');
   }
 
   static removeEventListeners() {
@@ -99,7 +99,7 @@ export class MessageRouter {
         break;
       }
       default: {
-        console.log('SDK Received Unknown error message', event);
+        console.log('[Benji Connect SDK] Received Unknown error message', event);
         break;
       }
     }
@@ -117,9 +117,8 @@ export class MessageRouter {
       if (typeof partial.type !== 'string') return;
       
       const message = partial as BenjiConnectEventMessage;
-      console.log('Received message ', message);
   
-      // Constraint checks
+      // TODO: Proper Constraint checks
       // if (Namespace && message.namespace && message.namespace !== Namespace) return;
       // if (Version != null && message.version != null && String(message.version) !== String(Version)) return;
   

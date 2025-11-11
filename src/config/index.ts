@@ -7,18 +7,13 @@ import {
   BenjiConnectMode 
 } from '../types/config';
 
-const env =
-  typeof import.meta !== 'undefined' && 'env' in import.meta
-    ? import.meta.env
-    : (typeof process !== 'undefined' ? process.env : {});
+const env = (typeof process !== 'undefined' ? process.env : {});
 let data = developmentConfig;
 
 export function configureConfig(
   environment: BenjiConnectEnvironment, 
   mode: BenjiConnectMode
 ) {
-  console.log('SDK Configuring config default data', data);
-  console.log('SDK Configuring config...', mode);
   if (environment == 'production') {
     data = productionConfig;
   } else if (environment == 'sandbox') {
@@ -27,20 +22,20 @@ export function configureConfig(
     data = developmentConfig;
   }
   Mode = mode;
-  console.log('SDK Configured config data', data);
+  console.log('[Benji Connect SDK] Configured config data', data);
 }
 
 export const Endpoints = Object.fromEntries(
   Object.entries(data.endpoints).map(([key, value]) => [
     key,
-    env?.[`VITE_${key}`] || env?.[`NEXT_PUBLIC_${key}`] || env?.[key] || value,
+    env?.[key] || value,
   ])
 );
 
 export const Credentials = Object.fromEntries(
   Object.entries(data.credentials).map(([key, value]) => [
     key,
-    env?.[`VITE_${key}`] || env?.[`NEXT_PUBLIC_${key}`] || env?.[key] || value,
+    env?.[key] || value,
   ])
 );
 

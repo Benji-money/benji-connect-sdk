@@ -31,7 +31,6 @@ class ConnectSDK {
   constructor(config: BenjiConnectConfig) {
 
     const baseSDKConfig: BenjiConnectConfig = { ...config };
-    console.log('SDK Initializing with config', config);
 
     // Validations
     if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
@@ -41,12 +40,6 @@ class ConnectSDK {
       ...baseSDKConfig, 
       // token is optional and will be added in initialize()
     };
-
-    // Normalize Callbacks
-    // if (!this.sdkConfig.onSuccess) this.sdkConfig.onSuccess = () => {};
-    // if (!this.sdkConfig.onError) this.sdkConfig.onError = () => {};
-    // if (!this.sdkConfig.onExit) this.sdkConfig.onExit = () => {};
-    // if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
 
     // Set config for mode/environment based on consumer input at runtime
     configureConfig(config.environment, BenjiConnectMode.CONNECT); // For now only in connect mode

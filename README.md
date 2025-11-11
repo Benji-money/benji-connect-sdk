@@ -20,19 +20,27 @@ yarn add @benji-money/connect-sdk
 import ConnectSDK from "@benji-money/connect-sdk";
 
 const sdk = new ConnectSDK({
-  env: "production", // or "sandbox" | "development",
+  environment: "production", // or "sandbox" | "development",
   bearerToken: "your-bearer-token",
-  onSuccess: (data: BenjiConnectOnSuccessData)  => {
-    console.log("Authentication success", data);
+
+  // token: string, metadata: BenjiConnectOnSuccessMetadata
+  onSuccess: (token, metadata) => {
+    console.log("Connect flow completed successfully", token, metadata);
   },
-  onError: (data: BenjiConnectOnErrorData) => {
-    console.log("Authentication error", data);
-  }
-  onExit: (data: BenjiConnectOnExitData) => {
-    console.log("Authentication exit", data);
+
+  // error: Error, error_id: string, metadata: BenjiConnectMetadata
+  onError: (error, error_id, metadata) => {
+    console.log("Connect error", error, error_id, metadata);
   },
-  onEvent: (data: BenjiConnectOnEventData) => {
-    console.log("Authentication event", data);
+
+  // metadata: BenjiConnectOnExitMetadata
+  onExit: (metadata) => {
+    console.log("Connect flow exit", metadata);
+  },
+
+  // type: BenjiConnectEventType, metadata: BenjiConnectMetadata
+  onEvent: (type, metadata) => {
+    console.log("Connect flow event", type, metadata);
   },
 });
 
@@ -50,12 +58,24 @@ sdk.openWithParams({
 <script src="/path/to/connect-sdk.umd.js"></script>
 <script>
   const sdk = new ConnectSDK({
-    env: "production", // or "sandbox" | "development",
+    environment: "production", // or "sandbox" | "development",
     bearerToken: "your-bearer-token",
-    onSuccess: (data: BenjiConnectOnSuccessData)  => console.log("Authentication success", data),
-    onError: (data: BenjiConnectOnErrorData) => console.log("Authentication error", data),
-    onExit: (data: BenjiConnectOnExitData) => console.log("Authentication exit", data),
-    onEvent: (data: BenjiConnectOnEventData) => console.log("Authentication event", data),
+
+    onSuccess: (token, metadata) => {
+      console.log("Connect flow completed successfully", token, metadata);
+    },
+
+    onError: (error, error_id, metadata) => {
+      console.log("Connect error", error, error_id, metadata);
+    },
+
+    onExit: (metadata) => {
+      console.log("Connect flow exit", metadata);
+    },
+
+    onEvent: (type, metadata) => {
+      console.log("Connect flow event", type, metadata);
+    },
   });
 
   sdk.openWithParams({
@@ -71,12 +91,10 @@ sdk.openWithParams({
 The SDK accepts the following configuration options:
 
 - `bearerToken` (required): Your API bearer token
-- `onSuccess` (required): Callback function called when authentication is successful
-- `onError` (required): Callback function called when error occurs in the authentication flow
-- `onExit` (required): Callback function called when the user exits the flow
-- `onEvent` (required): Callback function for handling various events
-- `authServiceUrl` (optional): Override the default auth service URL
-- `authUrl` (optional): Override the default auth URL
+- `onSuccess` (optional): Callback function called when connect completed successfully
+- `onError` (optional): Callback function called when error occurs in the connect flow
+- `onExit` (optional): Callback function called when the user exits the connect flow
+- `onEvent` (optional): Callback function for handling various events
 
 ## Development
 
