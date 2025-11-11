@@ -10,7 +10,7 @@ export enum BenjiConnectAuthAction {
 }
 
 export interface BenjiConnectAuthToken {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt?: string | number;
+  access_token: string;
+  refresh_token: string;
+  expires_at?: string | number;
 }

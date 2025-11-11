@@ -1,11 +1,20 @@
-import { mapEventToConnectToken } from '../utils/auth';
-import { buildContext } from '../utils/config';
-import { mapEventToConnectUserData } from '../utils/user';
+import { 
+  BenjiConnectMetadata, 
+  BenjiConnectOnErrorData, 
+  BenjiConnectOnEventData, 
+  BenjiConnectOnExitData, 
+  BenjiConnectOnExitMetadata, 
+  BenjiConnectOnSuccessData, 
+  BenjiConnectOnSuccessMetadata 
+} from './config';
 
 import { 
-  BenjiConnectAuthAction, 
-  BenjiConnectAuthToken 
-} from './auth';
+  extractAccessToken, 
+  mapEventToConnectToken 
+} from '../utils/auth';
+
+import { buildContext } from '../utils/config';
+import { mapEventToConnectUserData } from '../utils/user';
 
 import { 
   BenjiConnectAuthSuccessData,
@@ -16,43 +25,25 @@ import {
   BenjiConnectFlowExitEventData
 } from './event';
 
-import { BenjiConnectUserData } from './user';
-
 export type MessageRouterConfig = {
-  onSuccess?: (data: BenjiConnectOnSuccessData) => void;
-  onError?: (data: BenjiConnectOnErrorData) => void;
-  onExit?: (data: BenjiConnectOnExitData) => void;
-  onEvent?: (data: BenjiConnectOnEventData) => void;
-  close: () => void;
+  onSuccess?: (
+    token: string, 
+    metadata: BenjiConnectOnSuccessMetadata
+  ) => void;
+  onError?: (
+    error: Error,
+    error_id: string,
+    metadata: BenjiConnectMetadata
+  ) => void;
+  onExit?: (
+    metadata: BenjiConnectOnExitMetadata
+  ) => void;
+  onEvent?: (
+    type: BenjiConnectEventType, 
+    metadata: BenjiConnectMetadata
+  ) => void;
+  close?: () => void;
 };
-
-export interface BenjiConnectCallbackData {
-  context: { 
-    namespace: string; 
-    version: string 
-  };
-  [k: string]: unknown;
-}
-
-export interface BenjiConnectOnSuccessData extends BenjiConnectCallbackData {
-  action?: BenjiConnectAuthAction;
-  token?: BenjiConnectAuthToken,
-  userData?: BenjiConnectUserData;
-}
-
-export interface BenjiConnectOnErrorData extends BenjiConnectCallbackData  {
-  error: Error;
-}
-
-export interface BenjiConnectOnExitData extends BenjiConnectCallbackData  {
-  step?: string;
-  trigger?: string;
-}
-
-export interface BenjiConnectOnEventData extends BenjiConnectCallbackData  {
-  type: BenjiConnectEventType;
-  metadata?: BenjiConnectEventDataMap[BenjiConnectEventType];
-}
 
 export const mapToAuthSuccessData = (
   message: BenjiConnectEventMessage<BenjiConnectEventType.AUTH_SUCCESS>,
@@ -60,34 +51,43 @@ export const mapToAuthSuccessData = (
 ): BenjiConnectOnEventData => {
   return {
     type: message.type,
-    context: buildContext(),
-    action: data.action,
-    token: mapEventToConnectToken(data.token),
-    userData: mapEventToConnectUserData(data.metadata)
+    metadata: {
+      context: buildContext(),
+      action: data.action,
+      token: mapEventToConnectToken(data.token),
+      userData: mapEventToConnectUserData(data.metadata)
+    }
   };
 };
 
 export const mapToOnExitData = (data: BenjiConnectFlowExitEventData): BenjiConnectOnExitData => {
   return {
-    context: buildContext(),
-    step: data.step,
-    trigger: data.trigger,
+     metadata: {
+      context: buildContext(),
+      step: data.step,
+      trigger: data.trigger
+    }
   };
 };
 
 export const mapToOnSuccessData = (data: BenjiConnectAuthSuccessData): BenjiConnectOnSuccessData => {
   return {
-    context: buildContext(),
-    action: data.action,
-    userData: mapEventToConnectUserData(data.metadata),
-    token: mapEventToConnectToken(data.token),
+    token: extractAccessToken(data.token),
+    metadata: {
+      context: buildContext(),
+      action: data.action,
+      user_data: data.metadata
+    }
   };
 };
 
 export const mapToOnErrorData = (data: BenjiConnectErrorEventData): BenjiConnectOnErrorData => {
   return {
-    context: buildContext(),
-    error: data.error
+    error: data.error,
+    error_id: '500', // Placeholder
+    metadata: {
+      context: buildContext()
+    }
   };
 };
 
@@ -96,9 +96,11 @@ export const mapToOnEventData = <K extends BenjiConnectEventType>(
   data: BenjiConnectEventDataMap[K]
 ): BenjiConnectOnEventData => {
   return {
-    context: buildContext(),
     type: message.type,
-    metadata: data
+    metadata: {
+      context: buildContext(),
+      ...data
+    }
   };
 };
 
@@ -118,3 +120,4 @@ export const BenjiConnectCallbackMapperMap = {
   [BenjiConnectEventType.ERROR]: mapToOnErrorData,
   [BenjiConnectEventType.EVENT]: mapToOnEventData,
 } as const;
+

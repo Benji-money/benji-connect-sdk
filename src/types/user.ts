@@ -1,25 +1,3 @@
-/*
-export interface BenjiConnectUserData {
-  user: {
-    id: number
-    firstName: string
-  }
-  status: BenjiConnectUserStatusData
-  extraData?: {
-    totalRewardsEarned?: number
-    totalRewardsRedeemed?: number
-    createdDate?: string
-  }
-}
-
-export interface BenjiConnectUserStatusData {
-  statusId: string
-  numOfRewards: number
-  rewardStatus: string
-  partnerStatusTierId?: number
-}
-*/
-
 export interface BenjiConnectUserData {
   user: {
     id: number

@@ -35,9 +35,6 @@ class ConnectSDK {
 
     // Validations
     if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
-    if (typeof baseSDKConfig.onSuccess !== 'function') throw new Error('onSuccess callback is required');
-    if (typeof baseSDKConfig.onError !== 'function') throw new Error('onError callback is required');
-    if (typeof baseSDKConfig.onExit !== 'function') throw new Error('onExit callback is required');
 
     // Produce an InternalSDKConfig (token intentionally absent at this point)
     this.sdkConfig = { 
@@ -45,8 +42,11 @@ class ConnectSDK {
       // token is optional and will be added in initialize()
     };
 
-    // Normalize onEvent
-    if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
+    // Normalize Callbacks
+    // if (!this.sdkConfig.onSuccess) this.sdkConfig.onSuccess = () => {};
+    // if (!this.sdkConfig.onError) this.sdkConfig.onError = () => {};
+    // if (!this.sdkConfig.onExit) this.sdkConfig.onExit = () => {};
+    // if (!this.sdkConfig.onEvent) this.sdkConfig.onEvent = () => {};
 
     // Set config for mode/environment based on consumer input at runtime
     configureConfig(config.environment, BenjiConnectMode.CONNECT); // For now only in connect mode

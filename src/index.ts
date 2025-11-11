@@ -1,5 +1,6 @@
 // Import the default export from connect-sdk.ts
 import ConnectSDK from './connect-sdk';
+import { BenjiConnectEventType } from './types/event';
 
 // Re-export both default and a named export so consumers can do either:
 //   import ConnectSDK from '...'
@@ -10,3 +11,9 @@ export { ConnectSDK };
 
 // Expose Public types
 export * from './types/config';
+export { 
+  BenjiConnectErrorID,
+  BenjiConnectErrorName,
+  BenjiConnectEventType,
+  BenjiConnectExitTrigger,
+} from './types/event';

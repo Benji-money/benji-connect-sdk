@@ -10,9 +10,10 @@ import {
 
 import type {
   BenjiConnectOnSuccessData,
-  BenjiConnectOnErrorData,
   BenjiConnectOnExitData,
-  BenjiConnectOnEventData,
+  BenjiConnectMetadata,
+  BenjiConnectOnSuccessMetadata,
+  BenjiConnectOnExitMetadata,
   MessageRouterConfig
 } from '../types/router';
 
@@ -28,10 +29,22 @@ export class MessageRouter {
 
   static configuredListeners = false;
   static expectedOrigin: string = new URL(Endpoints.benji_connect_auth_url).origin;
-  static onSuccess?: (data: BenjiConnectOnSuccessData) => void;
-  static onError?: (data: BenjiConnectOnErrorData) => void;
-  static onExit?: (data: BenjiConnectOnExitData) => void;
-  static onEvent?: (data: BenjiConnectOnEventData) => void;
+  static onSuccess?: (
+      token: string, 
+      metadata: BenjiConnectOnSuccessMetadata
+    ) => void;
+  static onError?: (
+      error: Error,
+      error_id: string,
+      metadata: BenjiConnectMetadata
+    ) => void;
+  static onExit?: (
+    metadata: BenjiConnectOnExitMetadata
+  ) => void;
+  static onEvent?: (
+      type: BenjiConnectEventType, 
+      metadata: BenjiConnectMetadata
+    ) => void;
   static close?: () => void;
 
   static configureMessageRouter(config: MessageRouterConfig) {
@@ -117,42 +130,42 @@ export class MessageRouter {
         switch (message.type) {
   
           case BenjiConnectEventType.AUTH_SUCCESS: {
-            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.AUTH_SUCCESS>;
-            Tracker.trackEventMessageReceived(m);
-            const callbackData = BenjiConnectCallbackMapperMap.AUTH_SUCCESS(m, m.data);
-            this.onEvent?.(callbackData);      
+            const connectMessage = message as BenjiConnectEventMessage<BenjiConnectEventType.AUTH_SUCCESS>;
+            const callbackData = BenjiConnectCallbackMapperMap.AUTH_SUCCESS(connectMessage, connectMessage.data);
+            Tracker.trackEventMessageReceived(connectMessage);
+            this.onEvent?.(callbackData.type, callbackData.metadata);      
             break;
           }
   
           case BenjiConnectEventType.FLOW_EXIT: {
-            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_EXIT>;
-            Tracker.trackEventMessageReceived(m);
-            const callbackData = BenjiConnectCallbackMapperMap.FLOW_EXIT(m.data);
-            this.onEvent?.(mapToOnEventData(m, m.data));
-            this.onExit?.(callbackData);
+            const connectMessage = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_EXIT>;
+            const callbackData = BenjiConnectCallbackMapperMap.FLOW_EXIT(connectMessage.data) as BenjiConnectOnExitData;
+            Tracker.trackEventMessageReceived(connectMessage);
+            this.onExit?.(callbackData.metadata);
             this.close?.();
             break;
           }
   
           case BenjiConnectEventType.FLOW_SUCCESS: {
-            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_SUCCESS>;
-            Tracker.trackEventMessageReceived(m);
-            this.onEvent?.(mapToOnEventData(m, m.data)); // public event shape
+            const connectMessage = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_SUCCESS>;
+            Tracker.trackEventMessageReceived(connectMessage);
+
+            console.log('SDK RECEIVED FLOW SUCCESS', connectMessage);
   
             // Only forward onSuccess if in connect auth flow
-            if (m.data.action == BenjiConnectAuthAction.Connect) {
-              const callbackData = BenjiConnectCallbackMapperMap.FLOW_SUCCESS(m.data);
-              this.onSuccess?.(callbackData);
+            if (connectMessage.data.action == BenjiConnectAuthAction.Connect) {
+              const callbackData = BenjiConnectCallbackMapperMap.FLOW_SUCCESS(connectMessage.data) as BenjiConnectOnSuccessData;
+              console.log('SDK FORWARDING  ONSUCCESS', callbackData);
+              this.onSuccess?.(callbackData.token, callbackData.metadata);
             }         
             break;
           }
   
           case BenjiConnectEventType.ERROR: {
-            const m = message as BenjiConnectEventMessage<BenjiConnectEventType.ERROR>;
-            Tracker.trackEventMessageReceived(m);
-            const callbackData = BenjiConnectCallbackMapperMap.ERROR(m.data);
-            this.onEvent?.(mapToOnEventData(m, m.data));
-            this.onError?.(callbackData);
+            const connectMessage = message as BenjiConnectEventMessage<BenjiConnectEventType.ERROR>;
+            Tracker.trackEventMessageReceived(connectMessage);
+            const callbackData = BenjiConnectCallbackMapperMap.ERROR(connectMessage.data);
+            this.onError?.(callbackData.error, callbackData.error_id, callbackData.metadata);
             break;
           }
   
@@ -160,7 +173,8 @@ export class MessageRouter {
             // Unknown event type (forward generically)
             const m = message as BenjiConnectEventMessage<any>;
             Tracker.trackEventMessageReceived(m);
-            this.onEvent?.(mapToOnEventData(m, m.data as BenjiConnectEventData));
+            const callbackData = mapToOnEventData(m, m.data as BenjiConnectEventData);
+            this.onEvent?.(callbackData.type, callbackData.metadata);
             break;
           }
         }

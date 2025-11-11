@@ -1,9 +1,6 @@
-import { 
-  BenjiConnectOnErrorData, 
-  BenjiConnectOnEventData, 
-  BenjiConnectOnExitData, 
-  BenjiConnectOnSuccessData 
-} from './router';
+import { BenjiConnectAuthAction } from './auth';
+import { BenjiConnectEventType } from './event';
+import { BenjiConnectUserData } from './user';
 
 export enum BenjiConnectEnvironment {
   DEVELOPMENT = 'development',
@@ -20,10 +17,22 @@ export enum BenjiConnectMode {
 export interface BenjiConnectConfig {
   environment: BenjiConnectEnvironment;
   bearerToken: string;
-  onSuccess?: (data: BenjiConnectOnSuccessData) => void;
-  onError?: (data: BenjiConnectOnErrorData) => void;
-  onExit?: (data: BenjiConnectOnExitData) => void;
-  onEvent?: (data: BenjiConnectOnEventData) => void;
+  onSuccess?: (
+    token: string, 
+    metadata: BenjiConnectOnSuccessMetadata
+  ) => void;
+  onError?: (
+    error: Error,
+    error_id: string,
+    metadata: BenjiConnectMetadata
+  ) => void;
+  onExit?: (
+    metadata: BenjiConnectOnExitMetadata
+  ) => void;
+  onEvent?: (
+    type: BenjiConnectEventType, 
+    metadata: BenjiConnectMetadata
+  ) => void;
 }
 
 export interface BenjiConnectOptions {
@@ -39,4 +48,44 @@ export interface BenjiConnectOptions {
 export interface BenjiConnectContext {
   namespace?: string;         // e.g., 'benji-connect-sdk'
   version?: string | number;  // e.g., '1.0.0'
+}
+
+// SDK config callback structures below
+
+export interface BenjiConnectOnSuccessData {
+  token: string;
+  metadata: BenjiConnectOnSuccessMetadata;
+}
+
+export interface BenjiConnectOnErrorData  {
+  error: Error;
+  error_id: string;
+  metadata: BenjiConnectMetadata;
+}
+
+export interface BenjiConnectOnExitData  {
+  metadata: BenjiConnectOnExitMetadata;
+}
+
+export interface BenjiConnectOnEventData {
+  type: BenjiConnectEventType;
+  metadata: BenjiConnectMetadata;
+}
+
+export interface BenjiConnectMetadata {
+  context: { 
+    namespace: string; 
+    version: string 
+  };
+  [k: string]: unknown;
+}
+
+export interface BenjiConnectOnSuccessMetadata extends BenjiConnectMetadata {
+  action?: BenjiConnectAuthAction;
+  user_data?: BenjiConnectUserData;
+}
+
+export interface BenjiConnectOnExitMetadata extends BenjiConnectMetadata {
+  trigger?: string;
+  step?: string;
 }

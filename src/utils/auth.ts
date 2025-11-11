@@ -19,8 +19,11 @@ export function buildAuthRequestBody(params: BenjiConnectOptions): Record<string
   };
 }
 
+export const extractAccessToken = (token?: BenjiConnectEventToken | string): string =>
+  typeof token === 'string' ? token : (token?.access_token ?? '');
+
 export const mapEventToConnectToken = (data?: BenjiConnectEventToken): BenjiConnectAuthToken => ({
-  accessToken: data?.access_token ?? '',
-  refreshToken: data?.refresh_token ?? '',
-  expiresAt: data?.expires_at ?? ''
+  access_token: data?.access_token ?? '',
+  refresh_token: data?.refresh_token ?? '',
+  expires_at: data?.expires_at ?? ''
 });

@@ -16,6 +16,13 @@ export enum BenjiConnectExitTrigger {
   TAPPED_OUT_OF_BOUNDS = 'TAPPED_OUT_OF_BOUNDS'
 }
 
+export enum BenjiConnectErrorName {
+  UNEXPECTED_ERROR = 'unexpected_error',
+  PARTNER_CONNECT_ERROR = 'partner_connect_error'
+}
+
+export type BenjiConnectErrorID = '400' | '500'; // Placeholders for now
+
 // Transport-layer token (raw, unprocessed from postMessage)
 export interface BenjiConnectEventToken {
   access_token: string;
@@ -59,7 +66,7 @@ export interface BenjiConnectEventMessage<K extends BenjiConnectEventType = Benj
   data: BenjiConnectEventDataMap[K];
 }
 
-export interface BenjiConnectAuthSuccessData {
+export interface BenjiConnectAuthSuccessEventData {
   action: BenjiConnectAuthAction;
   token?: BenjiConnectEventToken,
   metadata?: BenjiConnectEventUserData;
@@ -76,9 +83,9 @@ export interface BenjiConnectErrorEventData {
 
 // Canonical event map 
 export type BenjiConnectEventDataMap = {
-  [BenjiConnectEventType.AUTH_SUCCESS]: BenjiConnectAuthSuccessData;
+  [BenjiConnectEventType.AUTH_SUCCESS]: BenjiConnectAuthSuccessEventData;
   [BenjiConnectEventType.FLOW_EXIT]: BenjiConnectFlowExitEventData;
-  [BenjiConnectEventType.FLOW_SUCCESS]: BenjiConnectAuthSuccessData;
+  [BenjiConnectEventType.FLOW_SUCCESS]: BenjiConnectAuthSuccessEventData;
   [BenjiConnectEventType.EVENT]: BenjiConnectEventData;
   [BenjiConnectEventType.ERROR]: BenjiConnectErrorEventData;
 
