@@ -1,0 +1,7 @@
+{
+  "project_environment": "production",
+  "endpoints": {
+    "benji_connect_auth_url" : "https://verifyapp.withbenji.com",
+    "benji_connect_auth_service_url" : "https://authservice.withbenji.com"
+  }
+}
