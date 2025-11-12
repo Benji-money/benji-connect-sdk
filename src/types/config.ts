@@ -5,7 +5,7 @@ import { BenjiConnectUserData } from './user';
 export enum BenjiConnectEnvironment {
   DEVELOPMENT = 'development',
   SANDBOX = 'sandbox',
-  PRODUCTION = 'production'
+  PRODUCTION = 'production',
 }
 
 export enum BenjiConnectMode {
@@ -15,7 +15,7 @@ export enum BenjiConnectMode {
 }
 
 export interface BenjiConnectConfig {
-  environment: BenjiConnectEnvironment;
+  environment: BenjiConnectEnvironment | string;
   bearerToken: string;
   onSuccess?: (
     token: string, 
