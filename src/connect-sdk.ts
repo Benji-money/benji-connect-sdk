@@ -2,7 +2,8 @@
 
 import { 
   configureConfig, 
-  Endpoints
+  Endpoints,
+  Environment
 } from './config';
 
 import { configureAuth } from './lib/auth';
@@ -11,13 +12,16 @@ import { requestAuthToken } from './api/auth/requestAuthToken';
 import { 
   type BenjiConnectConfig, 
   type BenjiConnectOptions, 
+  BenjiConnectEnvironment, 
   BenjiConnectMode
 } from './types/config';
 
 import { MessageRouter } from './router/message';
+import { mapToConnectEnvironment } from './utils/config';
 
 // @internal but not exported
 interface InternalConfig extends BenjiConnectConfig {
+  environment: BenjiConnectEnvironment,
   token?: string; // set after initialize()
 }
 
@@ -35,13 +39,18 @@ class ConnectSDK {
     if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
 
     // Produce an InternalSDKConfig (token intentionally absent at this point)
-    this.sdkConfig = { 
-      ...baseSDKConfig, 
+    this.sdkConfig = {
+      bearerToken: baseSDKConfig.bearerToken,
+      environment: mapToConnectEnvironment(baseSDKConfig.environment),
+      onSuccess: baseSDKConfig.onSuccess,
+      onError: baseSDKConfig.onError,
+      onEvent: baseSDKConfig.onEvent,
+      onExit: baseSDKConfig.onExit,
       // token is optional and will be added in initialize()
-    };
+    }
 
     // Set config for mode/environment based on consumer input at runtime
-    configureConfig(config.environment, BenjiConnectMode.CONNECT); // For now only in connect mode
+    configureConfig(this.sdkConfig.environment, BenjiConnectMode.CONNECT); // For now only in connect mode
 
     // TODO: Configure tracker for new config environment 
 
