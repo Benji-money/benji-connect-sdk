@@ -1,0 +1,7 @@
+{
+  "project_environment": "development",
+  "endpoints": {
+    "benji_connect_auth_url" : "http://localhost:3000",
+    "benji_connect_auth_service_url" : "https://authservice-staging.withbenji.com"
+  }
+}

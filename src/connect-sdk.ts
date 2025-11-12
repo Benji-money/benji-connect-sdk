@@ -15,7 +15,6 @@ import {
 } from './types/config';
 
 import { MessageRouter } from './router/message';
-import { Tracker } from './services/tracker';
 
 // @internal but not exported
 interface InternalConfig extends BenjiConnectConfig {
@@ -44,8 +43,7 @@ class ConnectSDK {
     // Set config for mode/environment based on consumer input at runtime
     configureConfig(config.environment, BenjiConnectMode.CONNECT); // For now only in connect mode
 
-    // Configure tracker for new config environment
-    Tracker.configureTracker(); 
+    // TODO: Configure tracker for new config environment 
 
     MessageRouter.configureMessageRouter({
       onSuccess: this.sdkConfig.onSuccess,
@@ -59,8 +57,8 @@ class ConnectSDK {
   async initialize(params: BenjiConnectOptions) {
     configureAuth(this.sdkConfig, params);
     (this.sdkConfig as any).token = await requestAuthToken();
-    Tracker.configureWithOptions(params);
-    Tracker.trackSDKInitialized();
+    // TODO: Tracker.configureWithOptions(params);
+    // TODO: Tracker.trackSDKInitialized();
   }
 
   async openWithParams(params: BenjiConnectOptions) {
@@ -111,14 +109,14 @@ class ConnectSDK {
     });
 
     MessageRouter.addEventListeners();
-    Tracker.trackSDKOpened();
+    // TODO: Track SDK Opened Tracker.trackSDKOpened();
   }
 
   close() {
     if (!this.iframe) return;
     document.body.removeChild(this.container!);
     MessageRouter.removeEventListeners();
-    Tracker.trackSDKClosed();
+    // TODO: Track SDK Closed Tracker.trackSDKClosed();
     this.iframe = null;
     this.container = null;
   }

@@ -32,13 +32,6 @@ export const Endpoints = Object.fromEntries(
   ])
 );
 
-export const Credentials = Object.fromEntries(
-  Object.entries(data.credentials).map(([key, value]) => [
-    key,
-    env?.[key] || value,
-  ])
-);
-
 export const Environment: BenjiConnectEnvironment = data["project_environment"] as BenjiConnectEnvironment;
 export let Mode: BenjiConnectMode = 1;
 export const Namespace = __NAMESPACE__;
