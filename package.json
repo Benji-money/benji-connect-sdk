@@ -1,15 +1,18 @@
 {
   "name": "@benji-money/connect-sdk",
-  "version": "1.0.4-beta.5",
+  "version": "1.0.4-beta.6",
   "description": "Benji Connect SDK for authentication and verification",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "unpkg": "dist/connect-sdk.umd.js",
   "jsdelivr": "dist/connect-sdk.umd.js",
