@@ -98,7 +98,7 @@ export class MessageRouter {
         break;
       }
       default: {
-        console.log('[Benji Connect SDK] Received Unknown error message', event);
+        console.error('[Benji Connect SDK] Received Unknown error message', event);
         break;
       }
     }

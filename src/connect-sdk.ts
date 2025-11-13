@@ -2,58 +2,50 @@
 
 import { 
   configureConfig, 
-  Endpoints,
-  Environment
+  Endpoints
 } from './config';
-
-import { configureAuth } from './lib/auth';
-import { requestAuthToken } from './api/auth/requestAuthToken';
 
 import { 
   type BenjiConnectConfig, 
-  type BenjiConnectOptions, 
-  BenjiConnectEnvironment, 
-  BenjiConnectMode
+  BenjiConnectEnvironment
 } from './types/config';
 
-import { MessageRouter } from './router/message';
+import { BenjiConnectData } from './types/connect';
+import { configureAuthentication, getAuthentication } from './services/auth';
 import { mapToConnectEnvironment } from './utils/config';
-
-// @internal but not exported
-interface InternalConfig extends BenjiConnectConfig {
-  environment: BenjiConnectEnvironment,
-  token?: string; // set after initialize()
-}
+import { mapTokenDataToConnectData } from './utils/connect';
+import { MessageRouter } from './router/message';
 
 class ConnectSDK {
 
-  private sdkConfig: InternalConfig;
+  private sdkConfig: BenjiConnectConfig;
+  private sdkOptions?: BenjiConnectData;
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
 
   constructor(config: BenjiConnectConfig) {
 
-    const baseSDKConfig: BenjiConnectConfig = { ...config };
+    this.sdkConfig = config;
 
     // Validations
-    if (!baseSDKConfig.bearerToken) throw new Error('Bearer token is required');
+    if (!this.sdkConfig.environment) throw new Error('Environment is required');
+    if (!this.sdkConfig.token) throw new Error('Connect token is required');
 
-    // Produce an InternalSDKConfig (token intentionally absent at this point)
-    this.sdkConfig = {
-      bearerToken: baseSDKConfig.bearerToken,
-      environment: mapToConnectEnvironment(baseSDKConfig.environment),
-      onSuccess: baseSDKConfig.onSuccess,
-      onError: baseSDKConfig.onError,
-      onEvent: baseSDKConfig.onEvent,
-      onExit: baseSDKConfig.onExit,
-      // token is optional and will be added in initialize()
-    }
+    // Set internal config for environment based on consumer input at runtime
+    const environment: BenjiConnectEnvironment = mapToConnectEnvironment(this.sdkConfig.environment);
+    this.sdkConfig.environment = environment;
+    configureConfig(environment);
+  }
 
-    // Set config for mode/environment based on consumer input at runtime
-    configureConfig(this.sdkConfig.environment, BenjiConnectMode.CONNECT); // For now only in connect mode
+  async initialize() {
 
-    // TODO: Configure tracker for new config environment 
-
+    // Configure authentication via token provided in sdk config
+    const connectTokenData = await configureAuthentication(this.sdkConfig.token);
+    
+    // Map to sdk options 
+    this.sdkOptions = mapTokenDataToConnectData(connectTokenData);
+    
+    // Configure message router for all postMessage from connect modal and error messages
     MessageRouter.configureMessageRouter({
       onSuccess: this.sdkConfig.onSuccess,
       onError: this.sdkConfig.onError,
@@ -61,21 +53,19 @@ class ConnectSDK {
       onEvent: this.sdkConfig.onEvent,
       close: () => this.close()
     });
-  }
 
-  async initialize(params: BenjiConnectOptions) {
-    configureAuth(this.sdkConfig, params);
-    (this.sdkConfig as any).token = await requestAuthToken();
-    // TODO: Tracker.configureWithOptions(params);
+    // TODO: Tracker.configureWithOptions(sdkOptions);
     // TODO: Tracker.trackSDKInitialized();
   }
 
-  async openWithParams(params: BenjiConnectOptions) {
-    await this.initialize(params);
-    this.open();
+  async open() {
+    await this.initialize();
+    this.openUI();
+    MessageRouter.addEventListeners();
+     // TODO: Track SDK Opened Tracker.trackSDKOpened();
   }
 
-  open() {
+  openUI() {
     if (this.iframe) return;
 
     // container
@@ -96,7 +86,8 @@ class ConnectSDK {
 
     // iframe
     const url = new URL(Endpoints.benji_connect_auth_url);
-    url.searchParams.set('code', (this.sdkConfig as any).token);
+    const configToken = getAuthentication().configToken;
+    url.searchParams.set('code', configToken);
     url.searchParams.set('t', String(Date.now()));
 
     this.iframe = document.createElement('iframe');
@@ -116,9 +107,6 @@ class ConnectSDK {
     this.container.addEventListener('click', (e) => {
       if (e.target === this.container) this.close();
     });
-
-    MessageRouter.addEventListeners();
-    // TODO: Track SDK Opened Tracker.trackSDKOpened();
   }
 
   close() {
