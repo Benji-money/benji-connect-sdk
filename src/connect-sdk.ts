@@ -10,16 +10,12 @@ import {
   BenjiConnectEnvironment
 } from './types/config';
 
-import { BenjiConnectData } from './types/connect';
-import { configureAuthentication, getAuthentication } from './services/auth';
 import { mapToConnectEnvironment } from './utils/config';
-import { mapTokenDataToConnectData } from './utils/connect';
 import { MessageRouter } from './router/message';
 
 class ConnectSDK {
 
   private sdkConfig: BenjiConnectConfig;
-  private sdkOptions?: BenjiConnectData;
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
 
@@ -38,12 +34,6 @@ class ConnectSDK {
   }
 
   async initialize() {
-
-    // Configure authentication via token provided in sdk config
-    const connectTokenData = await configureAuthentication(this.sdkConfig.token);
-    
-    // Map to sdk options 
-    this.sdkOptions = mapTokenDataToConnectData(connectTokenData);
     
     // Configure message router for all postMessage from connect modal and error messages
     MessageRouter.configureMessageRouter({
@@ -86,8 +76,8 @@ class ConnectSDK {
 
     // iframe
     const url = new URL(Endpoints.benji_connect_auth_url);
-    const configToken = getAuthentication().configToken;
-    url.searchParams.set('code', configToken);
+    const connectToken = this.sdkConfig.token;
+    url.searchParams.set('connect_token', connectToken);
     url.searchParams.set('t', String(Date.now()));
 
     this.iframe = document.createElement('iframe');

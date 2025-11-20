@@ -22,8 +22,6 @@ import {
   mapToOnEventData
 } from '../types/router';
 
-import { BenjiConnectAuthAction } from '../types/auth';
-
 export class MessageRouter {
 
   static configuredListeners = false;
@@ -147,12 +145,9 @@ export class MessageRouter {
           case BenjiConnectEventType.FLOW_SUCCESS: {
             const connectMessage = message as BenjiConnectEventMessage<BenjiConnectEventType.FLOW_SUCCESS>;
             // TODO: Track message received?
-  
-            // Only forward onSuccess if in connect auth flow
-            if (connectMessage.data.action == BenjiConnectAuthAction.Connect) {
-              const callbackData = BenjiConnectCallbackMapperMap.FLOW_SUCCESS(connectMessage.data) as BenjiConnectOnSuccessData;
-              this.onSuccess?.(callbackData.token, callbackData.metadata);
-            }         
+            // Forward onSuccess when flow completes for connect, redeem and transfer 
+            const callbackData = BenjiConnectCallbackMapperMap.FLOW_SUCCESS(connectMessage.data) as BenjiConnectOnSuccessData;
+            this.onSuccess?.(callbackData.token, callbackData.metadata);       
             break;
           }
   

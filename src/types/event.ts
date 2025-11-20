@@ -11,7 +11,8 @@ export enum BenjiConnectEventType {
 
 // Known exit trigger types coming from the SDK transport (postMessage)
 export enum BenjiConnectExitTrigger {
-  BACK_TO_MERCHANT_CLICKED = 'BACK_TO_MERCHANT_CLICKED',
+  ACTION_BUTTON_CLICKED = 'ACTION_BUTTON_CLICKED',
+  BACK_TO_MERCHANT_CLICKED = 'BACK_TO_MERCHANT_CLICKED', // deprecated
   CLOSE_BUTTON_CLICKED = 'CLOSE_BUTTON_CLICKED',
   TAPPED_OUT_OF_BOUNDS = 'TAPPED_OUT_OF_BOUNDS'
 }

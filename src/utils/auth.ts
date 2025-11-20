@@ -13,8 +13,3 @@ export const mapEventToConnectToken = (data?: BenjiConnectEventToken): BenjiConn
   refresh_token: data?.refresh_token ?? '',
   expires_at: data?.expires_at ?? ''
 });
-
-export const mapTokenDataToAuth = (data: BenjiConnectTokenData): BenjiConnectAuth => ({
-  accessToken: data.access_token,
-  configToken: data.config_token
-});
