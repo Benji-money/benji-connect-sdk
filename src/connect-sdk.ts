@@ -75,7 +75,7 @@ class ConnectSDK {
     } as CSSStyleDeclaration);
 
     // iframe
-    console.log('[Connect SDK] endpoints', Endpoints);
+    console.debug('[Connect SDK] endpoints', Endpoints);
     console.log('[Connect SDK] opeining URL', Endpoints.benji_connect_auth_url);
     const url = new URL(Endpoints.benji_connect_auth_url);
     const connectToken = this.sdkConfig.token;
