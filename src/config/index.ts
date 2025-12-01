@@ -9,10 +9,13 @@ let data = developmentConfig;
 
 export function configureConfig(environment: BenjiConnectEnvironment) {
   if (environment == 'production') {
+    console.log('[Connect SDK] configuring with env production');
     data = productionConfig;
   } else if (environment == 'sandbox') {
+    console.log('[Connect SDK] configuring with env sandbox');
     data = sandboxConfig;
   } else if (environment == 'development') {
+    console.log('[Connect SDK] configuring with env development');
     data = developmentConfig;
   }
 }
