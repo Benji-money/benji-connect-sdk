@@ -20,12 +20,16 @@ export function configureConfig(environment: BenjiConnectEnvironment) {
   }
 }
 
-export const Endpoints = Object.fromEntries(
-  Object.entries(data.endpoints).map(([key, value]) => [
-    key,
-    env?.[key] || value,
-  ])
-);
+export const Endpoints = getEndpoints();
+
+export function getEndpoints() {
+  return Object.fromEntries(
+    Object.entries(data.endpoints).map(([key, value]) => [
+      key,
+      env?.[key] || value,
+    ])
+  );
+}
 
 export const Environment: BenjiConnectEnvironment = data["project_environment"] as BenjiConnectEnvironment;
 export const Namespace = __NAMESPACE__;
