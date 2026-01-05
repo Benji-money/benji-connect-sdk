@@ -1,6 +1,6 @@
 {
   "name": "@benji-money/connect-sdk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Benji Connect SDK for authentication and verification",
   "type": "module",
   "main": "dist/index.cjs",
