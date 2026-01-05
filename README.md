@@ -16,12 +16,12 @@ yarn add @benji-money/connect-sdk
 
 ### ESM + CJS
 
-```javascript
+```typescript
 import ConnectSDK from "@benji-money/connect-sdk";
 
 const sdk = new ConnectSDK({
   environment: "production", // or "sandbox" | "development",
-  bearerToken: "your-bearer-token",
+  token: "your-connect-token",
 
   // token: string, metadata: BenjiConnectOnSuccessMetadata
   onSuccess: (token, metadata) => {
@@ -44,12 +44,8 @@ const sdk = new ConnectSDK({
   },
 });
 
-// Open the authentication flow
-sdk.openWithParams({
-  displayName: "User Name",
-  partnerId: "partner-id",
-  merchantId: "merchant-id",
-});
+// Open the authentication flow UI
+sdk.open();
 ```
 
 ### UMD (Script Tag)
@@ -59,7 +55,7 @@ sdk.openWithParams({
 <script>
   const sdk = new ConnectSDK({
     environment: "production", // or "sandbox" | "development",
-    bearerToken: "your-bearer-token",
+    token: "your-connect-token",
 
     onSuccess: (token, metadata) => {
       console.log("Connect flow completed successfully", token, metadata);
@@ -78,11 +74,7 @@ sdk.openWithParams({
     },
   });
 
-  sdk.openWithParams({
-    displayName: "User Name",
-    partnerId: "partner-id",
-    merchantId: "merchant-id",
-  });
+  sdk.open();
 </script>
 ```
 
@@ -90,7 +82,7 @@ sdk.openWithParams({
 
 The SDK accepts the following configuration options:
 
-- `bearerToken` (required): Your API bearer token
+- `token` (required): Your API connect token
 - `onSuccess` (optional): Callback function called when connect completed successfully
 - `onError` (optional): Callback function called when error occurs in the connect flow
 - `onExit` (optional): Callback function called when the user exits the connect flow

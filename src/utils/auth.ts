@@ -1,8 +1,4 @@
-import { 
-  BenjiConnectAuth, 
-  BenjiConnectAuthToken 
-} from "../types/auth";
-import { BenjiConnectTokenData } from "../types/connect";
+import { BenjiConnectAuthToken } from "../types/auth";
 import { BenjiConnectEventToken } from "../types/event";
 
 export const extractAccessToken = (token?: BenjiConnectEventToken | string): string =>
