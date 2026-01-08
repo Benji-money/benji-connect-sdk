@@ -10,8 +10,13 @@ import {
   BenjiConnectEnvironment
 } from './types/config';
 
-import { mapToConnectEnvironment } from './utils/config';
+import { 
+  buildContext, 
+  mapToConnectEnvironment 
+} from './utils/config';
+
 import { MessageRouter } from './router/message';
+import { BenjiConnectExitTrigger } from './types/event';
 
 class ConnectSDK {
 
@@ -97,6 +102,11 @@ class ConnectSDK {
     document.body.appendChild(this.container);
 
     this.container.addEventListener('click', (e) => {
+      // Trigger exit when user taps outside modal bounds
+      this.sdkConfig.onExit?.({
+        context: buildContext(),
+        trigger: BenjiConnectExitTrigger.TAPPED_OUT_OF_BOUNDS
+      });
       if (e.target === this.container) this.close();
     });
   }
