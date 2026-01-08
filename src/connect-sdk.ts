@@ -102,12 +102,14 @@ class ConnectSDK {
     document.body.appendChild(this.container);
 
     this.container.addEventListener('click', (e) => {
-      // Trigger exit when user taps outside modal bounds
-      this.sdkConfig.onExit?.({
-        context: buildContext(),
-        trigger: BenjiConnectExitTrigger.TAPPED_OUT_OF_BOUNDS
-      });
-      if (e.target === this.container) this.close();
+      if (e.target === this.container) {
+        // Trigger exit when user taps outside modal bounds
+        this.sdkConfig.onExit?.({
+          context: buildContext(),
+          trigger: BenjiConnectExitTrigger.TAPPED_OUT_OF_BOUNDS
+        });
+        this.close();
+      }
     });
   }
 
