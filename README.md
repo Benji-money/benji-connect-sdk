@@ -25,28 +25,29 @@ const sdk = new ConnectSDK({
 
   // token: string, metadata: BenjiConnectOnSuccessMetadata
   onSuccess: (token, metadata) => {
-    console.log("Connect flow completed successfully", token, metadata);
+    console.log("Benji Connect onSuccess");
   },
 
   // error: Error, error_id: string, metadata: BenjiConnectMetadata
   onError: (error, error_id, metadata) => {
-    console.log("Connect error", error, error_id, metadata);
+    console.log("Benji Connect onError");
   },
 
   // metadata: BenjiConnectOnExitMetadata
   onExit: (metadata) => {
-    console.log("Connect flow exit", metadata);
+    console.log("Benji Connect onExit");
   },
 
   // type: BenjiConnectEventType, metadata: BenjiConnectMetadata
   onEvent: (type, metadata) => {
-    console.log("Connect flow event", type, metadata);
+    console.log("Benji Connect onEvent", type);
   },
 });
 
 // Open the authentication flow UI
 sdk.open();
 ```
+Demo example [here](https://github.com/Benji-money/benji-connect-examples/tree/main/web/esm).
 
 ### UMD (Script Tag)
 
@@ -58,19 +59,19 @@ sdk.open();
     token: "your-connect-token",
 
     onSuccess: (token, metadata) => {
-      console.log("Connect flow completed successfully", token, metadata);
+      console.log("Benji Connect onSuccess");
     },
 
     onError: (error, error_id, metadata) => {
-      console.log("Connect error", error, error_id, metadata);
+      console.log("Benji Connect onError");
     },
 
     onExit: (metadata) => {
-      console.log("Connect flow exit", metadata);
+      console.log("Benji Connect onExit");
     },
 
     onEvent: (type, metadata) => {
-      console.log("Connect flow event", type, metadata);
+      console.log("Benji Connect onEvent", type);
     },
   });
 
