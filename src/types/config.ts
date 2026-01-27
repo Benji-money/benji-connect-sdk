@@ -1,5 +1,6 @@
 import { BenjiConnectAuthAction } from './auth';
 import { BenjiConnectEventType } from './event';
+import { BenjiConnectTransactionData } from './transaction';
 import { BenjiConnectUserData } from './user';
 
 export enum BenjiConnectEnvironment {
@@ -74,6 +75,7 @@ export interface BenjiConnectMetadata {
 
 export interface BenjiConnectOnSuccessMetadata extends BenjiConnectMetadata {
   action?: BenjiConnectAuthAction;
+  transaction_data?: BenjiConnectTransactionData | null;
   user_data?: BenjiConnectUserData;
 }
 
