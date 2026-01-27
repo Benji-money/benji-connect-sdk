@@ -45,6 +45,13 @@ export interface BenjiConnectEventUserData {
   }
 }
 
+export interface BenjiConnectEventTransactionData {
+  action: string;
+  amount: number;
+  trigger_event_id: string;
+  trigger_name: string;
+}
+
 export interface BenjiConnectEventUserStatusData {
   status_id: string
   num_of_rewards: number
@@ -69,8 +76,9 @@ export interface BenjiConnectEventMessage<K extends BenjiConnectEventType = Benj
 
 export interface BenjiConnectAuthSuccessEventData {
   action: BenjiConnectAuthAction;
-  token?: BenjiConnectEventToken,
   metadata?: BenjiConnectEventUserData;
+  token?: BenjiConnectEventToken,
+  transaction?: BenjiConnectEventTransactionData;
 }
 
 export interface BenjiConnectFlowExitEventData {
