@@ -47,6 +47,7 @@ const sdk = new ConnectSDK({
 // Open the authentication flow UI
 sdk.open();
 ```
+Demo example [here](https://github.com/Benji-money/benji-connect-examples/tree/main/web/esm).
 
 ### UMD (Script Tag)
 
