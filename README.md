@@ -1,6 +1,6 @@
-# Benji Connect SDK
+# Benji Connect Web SDK
 
-A JavaScript SDK for integrating Benji's authentication and verification services.
+A JavaScript Github Package SDK for integrating Benji Connect, Benji's authentication and verification services.
 
 ## Installation
 
@@ -17,7 +17,7 @@ yarn add @benji-money/connect-sdk
 ### ESM + CJS
 
 ```typescript
-import ConnectSDK from "@benji-money/connect-sdk";
+import { ConnectSDK } from "@benji-money/connect-sdk";
 
 const sdk = new ConnectSDK({
   environment: "production", // or "sandbox" | "development",
@@ -25,22 +25,22 @@ const sdk = new ConnectSDK({
 
   // token: string, metadata: BenjiConnectOnSuccessMetadata
   onSuccess: (token, metadata) => {
-    console.log("Benji Connect onSuccess");
+    console.log("✅ Benji Connect onSuccess");
   },
 
   // error: Error, error_id: string, metadata: BenjiConnectMetadata
   onError: (error, error_id, metadata) => {
-    console.log("Benji Connect onError");
+    console.log("🛑 Benji Connect onError");
   },
 
   // metadata: BenjiConnectOnExitMetadata
   onExit: (metadata) => {
-    console.log("Benji Connect onExit");
+    console.log("🚪 Benji Connect onExit");
   },
 
   // type: BenjiConnectEventType, metadata: BenjiConnectMetadata
   onEvent: (type, metadata) => {
-    console.log("Benji Connect onEvent", type);
+    console.log("📨 Benji Connect onEvent \(type)");
   },
 });
 
@@ -59,19 +59,19 @@ Demo example [here](https://github.com/Benji-money/benji-connect-examples/tree/m
     token: "your-connect-token",
 
     onSuccess: (token, metadata) => {
-      console.log("Benji Connect onSuccess");
+      console.log("✅ Benji Connect onSuccess");
     },
 
     onError: (error, error_id, metadata) => {
-      console.log("Benji Connect onError");
+      console.log("🛑 Benji Connect onError");
     },
 
     onExit: (metadata) => {
-      console.log("Benji Connect onExit");
+      console.log("🚪 Benji Connect onExit");
     },
 
     onEvent: (type, metadata) => {
-      console.log("Benji Connect onEvent", type);
+      console.log("📨 Benji Connect onEvent", type);
     },
   });
 

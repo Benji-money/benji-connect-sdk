@@ -24,6 +24,7 @@ import {
   BenjiConnectEventType, 
   BenjiConnectFlowExitEventData
 } from './event';
+import { mapEventToConnectTransactionData } from '../utils/transaction';
 
 export type MessageRouterConfig = {
   onSuccess?: (
@@ -55,6 +56,7 @@ export const mapToAuthSuccessData = (
       context: buildContext(),
       action: data.action,
       token: mapEventToConnectToken(data.token),
+      transactionData: mapEventToConnectTransactionData(data.transaction),
       userData: mapEventToConnectUserData(data.metadata)
     }
   };
@@ -71,14 +73,20 @@ export const mapToOnExitData = (data: BenjiConnectFlowExitEventData): BenjiConne
 };
 
 export const mapToOnSuccessData = (data: BenjiConnectAuthSuccessEventData): BenjiConnectOnSuccessData => {
-  return {
-    token: extractAccessToken(data.token),
-    metadata: {
-      context: buildContext(),
-      action: data.action,
-      user_data: data.metadata
-    }
+  
+  const token = extractAccessToken(data.token);
+
+  let metadata: BenjiConnectOnSuccessMetadata = {
+    context: buildContext(),
+    action: data.action,
+    user_data: data.metadata
   };
+
+  if (data.transaction) {
+    metadata.transaction_data = data.transaction;
+  }
+  
+  return { token, metadata };
 };
 
 export const mapToOnErrorData = (data: BenjiConnectErrorEventData): BenjiConnectOnErrorData => {
