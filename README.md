@@ -101,4 +101,11 @@ npm run build
 
 ## License
 
-Private - All rights reserved
+License
+
+This SDK is proprietary software provided by Benji Money.
+
+You are welcome to use it to integrate with Benji services, but modification,
+redistribution, or use outside of Benji’s platform is not permitted.
+
+See the [LICENSE](./LICENSE) file for full terms and usage details.
