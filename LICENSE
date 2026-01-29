@@ -1,0 +1,24 @@
+Benji Connect SDK License
+
+Copyright © 2026 The Benji Group, Inc. 
+All rights reserved.
+
+This SDK is proprietary software provided by Benji Group, Inc. (“Benji”).
+
+You are welcome to view, install, and use this SDK for the purpose of
+integrating your application with Benji’s authentication and verification
+services, subject to an active or intended customer relationship with Benji.
+
+To keep things clear and fair, the following restrictions apply:
+
+You may not:
+- modify, adapt, or create derivative works of the SDK
+- redistribute, sublicense, or publicly host the SDK
+- resell or commercialize the SDK independently of Benji services
+- use the SDK to build or support a competing product or service
+
+All rights, title, and interest in the SDK remain with Benji Group, Inc.
+
+If you’d like to discuss extended use cases, redistribution rights, or have
+questions about integration, please contact Benji at:
+support@withbenj.com
